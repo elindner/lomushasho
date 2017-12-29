@@ -23,7 +23,7 @@ Steam Ids, for reference
 JSON data file for reference:
 {
   "game_type": {
-    "steam_id": [rating_mu, rating_sigma, games_won, games_lost],
+    "steam_id": [rating_mu, rating_sigma, games_won, games_lost, kills, deaths],
     ...
   },
   ...
