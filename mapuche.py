@@ -39,6 +39,10 @@ class mapuche(minqlx.Plugin):
         json.dumps(self.aliases, sort_keys=True, indent=2))
 
 
+  def get_aliases(self):
+    return self.aliases.copy()
+
+
   def print_aliases(self, channel):
     self.print_header(channel, 'Aliases')
     for alias in self.aliases:
