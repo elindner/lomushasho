@@ -1,16 +1,25 @@
-registered_commands = []
-last_message = None
+class State():
+  registered_commands = []
+  last_message = None
+  current_map_name = None
+  current_factory = None
+
 
 class Plugin(object):
   def msg(self, message):
-    last_message = message
+    State.last_message = message
 
   def add_command(self, name, cmd, arg_count=0):
-    registered_commands.append([name, cmd, arg_count])
+    State.registered_commands.append([name, cmd, arg_count])
+
+  def change_map(self, map_name, factory):
+    State.current_map_name = map_name
+    State.current_factory = factory
+
 
 def reset():
-  global registered_commands
-  global last_message
-  registered_commands = []
-  last_message = None
+  State.registered_commands = []
+  State.last_message = None
+  State.current_map_name = None
+  State.current_factory = None
 
