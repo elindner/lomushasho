@@ -1,25 +1,37 @@
-class State():
+class Plugin(object):
   registered_commands = []
   last_message = None
   current_map_name = None
   current_factory = None
 
+  def reset():
+    Plugin.registered_commands = []
+    Plugin.last_message = None
+    Plugin.current_map_name = None
+    Plugin.current_factory = None
 
-class Plugin(object):
   def msg(self, message):
-    State.last_message = message
+    Plugin.last_message = message
 
   def add_command(self, name, cmd, arg_count=0):
-    State.registered_commands.append([name, cmd, arg_count])
+    Plugin.registered_commands.append([name, cmd, arg_count])
 
   def change_map(self, map_name, factory):
-    State.current_map_name = map_name
-    State.current_factory = factory
+    Plugin.current_map_name = map_name
+    Plugin.current_factory = factory
+
+
+class Channel(object):
+  message_log = ''
+
+  def reset():
+    Channel.message_log = ''
+
+  def reply(self, message):
+    Channel.message_log = '%s\n%s' % (Channel.message_log, message)
 
 
 def reset():
-  State.registered_commands = []
-  State.last_message = None
-  State.current_map_name = None
-  State.current_factory = None
+  Plugin.reset()
+  Channel.reset()
 
