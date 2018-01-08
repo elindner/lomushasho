@@ -74,7 +74,7 @@ class TestMapuche(unittest.TestCase):
   def test_set(self):
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    mapu.cmd_mapuche_set(PLAYER, (None, 'patio', 'duelingkeeps'), CHANNEL)
+    minqlx_fake.call_command(mapu.cmd_mapuche_set, 'patio', 'duelingkeeps')
     self.assertEqual(
         {'playa': 'q3wcp16', 'patio': 'duelingkeeps'}, mapu.get_aliases())
 
@@ -84,7 +84,7 @@ class TestMapuche(unittest.TestCase):
     expected = {'playa': 'q3wcp16', 'patio': 'duelingkeeps'}
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    mapu.cmd_mapuche_set(PLAYER, (None, 'patio', 'duelingkeeps'), CHANNEL)
+    minqlx_fake.call_command(mapu.cmd_mapuche_set, 'patio', 'duelingkeeps')
     self.assertEqual(expected, mapu.get_aliases())
     self.assertSavedJson(expected, m)
 
@@ -93,7 +93,7 @@ class TestMapuche(unittest.TestCase):
   def test_remove(self):
     mapu = mapuche.mapuche()
     self.assertEqual(MULTI_ALIAS_DATA, mapu.get_aliases())
-    mapu.cmd_mapuche_remove(PLAYER, (None, 'patio'), CHANNEL)
+    minqlx_fake.call_command(mapu.cmd_mapuche_remove, 'patio')
     self.assertEqual({
         'asilo': 'asylum',
         'balcon': '13camp',
@@ -109,7 +109,7 @@ class TestMapuche(unittest.TestCase):
     mapu = mapuche.mapuche()
     self.assertEqual(None, minqlx_fake.Plugin.current_factory)
     self.assertEqual(None, minqlx_fake.Plugin.current_map_name)
-    mapu.cmd_mapuche(PLAYER, (None, 'patio', 'ad'), CHANNEL)
+    minqlx_fake.call_command(mapu.cmd_mapuche, 'patio', 'ad')
     self.assertEqual('ad', minqlx_fake.Plugin.current_factory)
     self.assertEqual(
         MULTI_ALIAS_DATA['patio'], minqlx_fake.Plugin.current_map_name)
@@ -119,7 +119,7 @@ class TestMapuche(unittest.TestCase):
   def test_print_aliases(self):
     mapu = mapuche.mapuche()
     channel = minqlx_fake.Channel()
-    mapu.cmd_mapuche_aliases(PLAYER, (None), channel)
+    minqlx_fake.call_command(mapu.cmd_mapuche_aliases)
 
     clean_log = re.sub(
         r'\^[\d+]', '', minqlx_fake.Channel.message_log).replace(' ', '')

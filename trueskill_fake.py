@@ -1,0 +1,2 @@
+class Rating(object):
+  pass

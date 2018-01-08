@@ -199,6 +199,11 @@ class oloraculo(minqlx.Plugin):
     self.print_log('Stats saved.')
 
 
+  def get_stats(self):
+    # Should return a copy.
+    return self.stats
+
+
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
 
