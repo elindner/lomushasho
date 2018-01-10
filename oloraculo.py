@@ -397,9 +397,7 @@ class oloraculo(minqlx.Plugin):
 
     if max_score < limit:
       self.print_log('Not updating ratings: no team won.')
-      print('a')
       return
-
 
     self.update_player_ratings()
     self.save_stats()
