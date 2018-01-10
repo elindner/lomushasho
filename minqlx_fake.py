@@ -1,13 +1,16 @@
 class Player(object):
-  def __init__(self, steam_id, name):
+  def __init__(self, steam_id, name, team=None):
     self.steam_id = steam_id
     self.name = name
     self.clean_name = name
+    self.team = team
 
 
 class Game(object):
-  def __init__(self, type_short):
+  def __init__(self, type_short, blue_score=0, red_score=0):
     self.type_short = type_short
+    self.blue_score = blue_score
+    self.red_score = red_score
 
 
 class Plugin(object):
@@ -17,6 +20,7 @@ class Plugin(object):
   current_map_name = None
   current_factory = None
   game = Game('ad')
+  players = []
 
   def reset():
     Plugin.registered_commands = []
@@ -25,6 +29,13 @@ class Plugin(object):
     Plugin.current_map_name = None
     Plugin.current_factory = None
     Plugin.game = Game('ad')
+    Plugin.players = []
+
+  def set_game(game):
+    Plugin.game = game
+
+  def set_players(players):
+    Plugin.players = players
 
   def msg(self, message):
     Plugin.last_message = message
@@ -38,7 +49,6 @@ class Plugin(object):
   def change_map(self, map_name, factory):
     Plugin.current_map_name = map_name
     Plugin.current_factory = factory
-
 
 
 class Channel(object):

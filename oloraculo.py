@@ -1,3 +1,4 @@
+import copy
 import itertools
 import json
 import minqlx
@@ -127,7 +128,7 @@ class Db(object):
 
 
   def load(self, file_name):
-    # {'type': {'pid': [rating.mu, rating.sigma, win, loss], ...}, ...}
+    # {'type': {'pid': [rating.mu, rating.sigma, win, loss, k, d], ...}, ...}
     json_data = json.loads(open(file_name).read())
     player_ids = set()
 
@@ -200,8 +201,7 @@ class oloraculo(minqlx.Plugin):
 
 
   def get_stats(self):
-    # Should return a copy.
-    return self.stats
+    return copy.deepcopy(self.stats)
 
 
   def get_clean_name(self, name):
@@ -397,7 +397,9 @@ class oloraculo(minqlx.Plugin):
 
     if max_score < limit:
       self.print_log('Not updating ratings: no team won.')
+      print('a')
       return
+
 
     self.update_player_ratings()
     self.save_stats()

@@ -10,8 +10,6 @@ from unittest.mock import patch
 sys.modules['minqlx'] = minqlx_fake
 import mapuche
 
-PLAYER = {}
-CHANNEL = {}
 SINGLE_ALIAS_DATA = {'playa': 'q3wcp16'}
 MULTI_ALIAS_DATA = {
   'asilo': 'asylum',
