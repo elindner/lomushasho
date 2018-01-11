@@ -1,10 +1,28 @@
+import copy
+
 MU = 25
-SIGMA = MU / 3
 
 class Rating(object):
-  def __init__(self, mu=MU, sigma=SIGMA):
+  def __init__(self, mu=MU, sigma=0):
     self.mu = mu
-    self.sigma = sigma
+    self.sigma = 0 # unused in tests
+    self.exposure = mu * 2
 
-  def equals(r1, r2):
-    return r1.mu == r2.mu and r1.sigma == r2.sigma
+  def __repr__(self):
+    return '<Rating:%d>' % self.mu
+
+  def __eq__(self, other):
+    return self.mu == other.mu
+
+
+def rate(original_ratings, ranks):
+  # Fake rating will just increase mu by 1 if win, decrease if loss.
+  new_ratings = copy.deepcopy(original_ratings)
+
+  for rating in new_ratings[0]:
+    rating.mu += 1 if ranks[1] == 1 else -1
+
+  for rating in new_ratings[1]:
+    rating.mu += 1 if ranks[0] == 1 else -1
+
+  return new_ratings

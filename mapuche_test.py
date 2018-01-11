@@ -50,7 +50,6 @@ class TestMapuche(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_loads_aliases(self):
     mapu = mapuche.mapuche()
-    print(minqlx_fake.last_message)
     self.assertEqual({'playa': 'q3wcp16'}, mapu.get_aliases())
 
 
@@ -116,7 +115,6 @@ class TestMapuche(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_print_aliases(self):
     mapu = mapuche.mapuche()
-    channel = minqlx_fake.Channel()
     minqlx_fake.call_command(mapu.cmd_mapuche_aliases)
 
     clean_log = re.sub(
