@@ -158,5 +158,45 @@ class TestOloraculo(unittest.TestCase):
     self.assertEqual([0, 0], olor.get_stats().get_killdeath('ad', 123456))
 
 
+  @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
+  def test_oloraculo_ratings(self):
+    olor = oloraculo.oloraculo()
+    player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
+
+    # No players loaded yet:
+    minqlx_fake.call_command(olor.cmd_oloraculo_ratings)
+    for player_name in player_names:
+      self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
+
+    minqlx_fake.Plugin.reset()
+
+    # Players loaded.
+    for player_id in PLAYER_ID_MAP:
+      olor.handle_player_loaded(PLAYER_ID_MAP[player_id])
+    minqlx_fake.call_command(olor.cmd_oloraculo_ratings)
+    for player_name in player_names:
+      self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))
+
+
+  @patch('builtins.open', mock_open(read_data=json.dumps({})))
+  def test_oloraculo_ratings_no_stats(self):
+    olor = oloraculo.oloraculo()
+    player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
+
+    # No players loaded yet:
+    minqlx_fake.call_command(olor.cmd_oloraculo_ratings)
+    for player_name in player_names:
+      self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
+
+    minqlx_fake.Plugin.reset()
+
+    # Players loaded.
+    for player_id in PLAYER_ID_MAP:
+      olor.handle_player_loaded(PLAYER_ID_MAP[player_id])
+    minqlx_fake.call_command(olor.cmd_oloraculo_ratings)
+    for player_name in player_names:
+      self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))
+
+
 if __name__ == '__main__':
     unittest.main()
