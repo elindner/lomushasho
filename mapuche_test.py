@@ -10,14 +10,14 @@ from unittest.mock import patch
 sys.modules['minqlx'] = minqlx_fake
 import mapuche
 
-SINGLE_ALIAS_DATA = {'playa': 'q3wcp16'}
+SINGLE_ALIAS_DATA = {'playa': {'mapname': 'q3wcp16', 'factory': 'ad'}}
 MULTI_ALIAS_DATA = {
-  'asilo': 'asylum',
-  'balcon': '13camp',
-  'herradura': 'courtyard',
-  'lapidas': 'railyard',
-  'patio': 'duelingkeeps',
-  'playa': 'q3wcp16',
+    'asilo': {'mapname': 'asylum', 'factory': 'ad'},
+    'balcon': {'mapname': '13camp', 'factory': 'ad'},
+    'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
+    'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
+    'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+    'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
 }
 SINGLE_ALIAS_JSON = json.dumps(SINGLE_ALIAS_DATA)
 MULTI_ALIAS_JSON = json.dumps(MULTI_ALIAS_DATA)
@@ -69,19 +69,27 @@ class TestMapuche(unittest.TestCase):
 
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_set(self):
+    expected = {
+      'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
+      'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+    }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    minqlx_fake.call_command(mapu.cmd_mapuche_set, 'patio', 'duelingkeeps')
-    self.assertEqual(
-        {'playa': 'q3wcp16', 'patio': 'duelingkeeps'}, mapu.get_aliases())
+    minqlx_fake.call_command(
+        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
+    self.assertEqual(expected, mapu.get_aliases())
 
 
   @patch('builtins.open', new_callable=mock_open, read_data=SINGLE_ALIAS_JSON)
   def test_set_saves(self, m):
-    expected = {'playa': 'q3wcp16', 'patio': 'duelingkeeps'}
+    expected = {
+      'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
+      'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+    }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    minqlx_fake.call_command(mapu.cmd_mapuche_set, 'patio', 'duelingkeeps')
+    minqlx_fake.call_command(
+        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
     self.assertEqual(expected, mapu.get_aliases())
     self.assertSavedJson(expected, m)
 
@@ -91,12 +99,14 @@ class TestMapuche(unittest.TestCase):
     mapu = mapuche.mapuche()
     self.assertEqual(MULTI_ALIAS_DATA, mapu.get_aliases())
     minqlx_fake.call_command(mapu.cmd_mapuche_remove, 'patio')
+
+
     self.assertEqual({
-        'asilo': 'asylum',
-        'balcon': '13camp',
-        'herradura': 'courtyard',
-        'lapidas': 'railyard',
-        'playa': 'q3wcp16',
+        'asilo': {'mapname': 'asylum', 'factory': 'ad'},
+        'balcon': {'mapname': '13camp', 'factory': 'ad'},
+        'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
+        'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
+        'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
       },
       mapu.get_aliases())
 
@@ -106,10 +116,20 @@ class TestMapuche(unittest.TestCase):
     mapu = mapuche.mapuche()
     self.assertEqual(None, minqlx_fake.Plugin.current_factory)
     self.assertEqual(None, minqlx_fake.Plugin.current_map_name)
+    # force factory
     minqlx_fake.call_command(mapu.cmd_mapuche, 'patio', 'ad')
     self.assertEqual('ad', minqlx_fake.Plugin.current_factory)
     self.assertEqual(
-        MULTI_ALIAS_DATA['patio'], minqlx_fake.Plugin.current_map_name)
+        MULTI_ALIAS_DATA['patio']['mapname'],
+        minqlx_fake.Plugin.current_map_name)
+    # default factory
+    minqlx_fake.call_command(mapu.cmd_mapuche, 'patio')
+    self.assertEqual(
+        MULTI_ALIAS_DATA['patio']['factory'],
+        minqlx_fake.Plugin.current_factory)
+    self.assertEqual(
+        MULTI_ALIAS_DATA['patio']['mapname'],
+        minqlx_fake.Plugin.current_map_name)
 
 
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
@@ -120,8 +140,10 @@ class TestMapuche(unittest.TestCase):
     clean_log = re.sub(
         r'\^[\d+]', '', minqlx_fake.Channel.message_log).replace(' ', '')
 
-    for alias, mapname in MULTI_ALIAS_DATA.items():
-      self.assertIn('\n%s:%s\n' % (alias, mapname), clean_log)
+    for alias, data in MULTI_ALIAS_DATA.items():
+      self.assertIn(
+          '\n%s:%s(%s)\n' % (alias, data['mapname'], data['factory']),
+          clean_log)
 
 
 if __name__ == '__main__':
