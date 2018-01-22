@@ -24,8 +24,13 @@ class mapuche(minqlx.Plugin):
 
 
   def load_aliases(self):
-    self.aliases = json.loads(open(JSON_FILE_PATH).read())
-    self.print_log('Loaded %d aliases.' % len(self.aliases.keys()))
+    self.aliases = None
+    try:
+      self.aliases = json.loads(open(JSON_FILE_PATH).read())
+      self.print_log('Loaded %d aliases.' % len(self.aliases.keys()))
+    except Exception as e:
+      self.print_log('Could not load aliases (%s)' % e)
+      self.aliases = {}
 
 
   def print_header(self, channel, message):

@@ -53,6 +53,18 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual({'playa': 'q3wcp16'}, mapu.get_aliases())
 
 
+  @patch('builtins.open', mock_open(read_data='invalid'))
+  def test_loads_aliases_invalid_json(self):
+    mapu = mapuche.mapuche()
+    self.assertEqual({}, mapu.get_aliases())
+    # still usable
+    minqlx_fake.call_command(
+        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
+    self.assertEqual(
+        {'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'}},
+        mapu.get_aliases())
+
+
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_loads_aliases(self):
     mapu = mapuche.mapuche()
