@@ -13,7 +13,7 @@ class Player(object):
     self.stats = PlayerStats(kills, deaths)
 
   def __repr__(self):
-    return 'Player<%d:%s>' % (self.steam_id, self.name)
+    return 'Player<%d:%s(%s)>' % (self.steam_id, self.name, self.team)
 
 
 class Game(object):
@@ -31,7 +31,6 @@ class Plugin(object):
   current_factory = None
   game = Game('ad')
   # TODO: merge these
-  player_list = []
   players_by_team = {}
 
   def reset():
@@ -41,16 +40,15 @@ class Plugin(object):
     Plugin.current_map_name = None
     Plugin.current_factory = None
     Plugin.game = Game('ad')
-    Plugin.player_list = []
     Plugin.players_by_team = {}
 
   def set_game(game):
     Plugin.game = game
 
-  def set_player_list(player_list):
-    Plugin.player_list = player_list
-
   def set_players_by_team(players_by_team):
+    for team in players_by_team:
+      for player in players_by_team[team]:
+        player.team = team
     Plugin.players_by_team = players_by_team
 
   # minqlx.Plugin API here:
@@ -59,7 +57,7 @@ class Plugin(object):
     return self.players_by_team.copy()
 
   def players(self):
-    return self.player_list
+    return [player for team in self.players_by_team.values() for player in team]
 
   def msg(self, message):
     Plugin.messages.append(message)

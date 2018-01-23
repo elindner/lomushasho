@@ -77,6 +77,12 @@ class Db(object):
     self._killdeath_dict = {}
 
 
+  def __eq__(self, other):
+    return (self._ratings_dict == other._ratings_dict) and (
+        self._winloss_dict == other._winloss_dict) and (
+        self._killdeath_dict == other._killdeath_dict)
+
+
   def _ratings(self, game_type):
     return self._ratings_dict.setdefault(game_type, {})
 
@@ -172,7 +178,7 @@ class Db(object):
 class oloraculo(minqlx.Plugin):
   def __init__(self):
     self.add_command('oloraculo', self.cmd_oloraculo)
-    self.add_command('oloraculo_ratings', self.cmd_oloraculo_ratings)
+    self.add_command('oloraculo_stats', self.cmd_oloraculo_stats)
     self.add_hook('game_end', self.handle_game_end)
     self.add_hook('game_start', self.handle_game_start)
     self.add_hook("player_loaded", self.handle_player_loaded)
@@ -187,12 +193,15 @@ class oloraculo(minqlx.Plugin):
     # TESTING
     if TESTING:
       self.cmd_oloraculo(None, None, None)
-      self.cmd_oloraculo_ratings(None, None, None)
+      self.cmd_oloraculo_stats(None, None, None)
 
 
   def load_stats(self):
-    self.stats.load(JSON_FILE_PATH)
-    self.print_log('Stats loaded.')
+    try:
+      self.stats.load(JSON_FILE_PATH)
+      self.print_log('Stats loaded.')
+    except Exception as e:
+      self.print_log('Could not load stats (%s)' % e)
 
 
   def save_stats(self):
@@ -246,7 +255,7 @@ class oloraculo(minqlx.Plugin):
     return match_qualities
 
 
-  def update_player_ratings(self):
+  def update_player_stats(self):
     game_type = self.game.type_short
 
     teams = self.teams()
@@ -399,7 +408,7 @@ class oloraculo(minqlx.Plugin):
       self.print_log('Not updating ratings: no team won.')
       return
 
-    self.update_player_ratings()
+    self.update_player_stats()
     self.save_stats()
 
 
@@ -425,7 +434,7 @@ class oloraculo(minqlx.Plugin):
     self.msg(' ')
 
 
-  def print_player_ratings(self):
+  def print_player_stats(self):
 
     def get_ratio_string(title, max_value, value_a, value_b):
       ratio = value_a / float(value_b) if value_b > 0 else 0.0
@@ -465,13 +474,13 @@ class oloraculo(minqlx.Plugin):
     self.msg('%sOlorACulo:^7 %s' % (HEADER_COLOR_STRING, msg))
 
 
-  def cmd_oloraculo_ratings(self, player, msg, channel):
+  def cmd_oloraculo_stats(self, player, msg, channel):
     if not self.is_interesting_game_type():
       self.print_log('This game type is not interesting. No ratings.')
       return
 
     self.populate_player_id_map()
-    self.print_player_ratings()
+    self.print_player_stats()
 
 
   def cmd_oloraculo(self, player, msg, channel):

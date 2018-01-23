@@ -26,3 +26,8 @@ def rate(original_ratings, ranks):
     rating.mu += 1 if ranks[0] == 1 else -1
 
   return new_ratings
+
+
+def quality(ratings):
+  return sum([r.mu for r in ratings[0]]) / sum([r.mu for r in ratings[1]])
+
