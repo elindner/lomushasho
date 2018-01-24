@@ -1,3 +1,6 @@
+import re
+
+
 class PlayerStats(object):
   def __init__(self, kills, deaths):
     self.kills = kills
@@ -30,7 +33,6 @@ class Plugin(object):
   current_map_name = None
   current_factory = None
   game = Game('ad')
-  # TODO: merge these
   players_by_team = {}
 
   def reset():
@@ -60,7 +62,8 @@ class Plugin(object):
     return [player for team in self.players_by_team.values() for player in team]
 
   def msg(self, message):
-    Plugin.messages.append(message)
+    clean_message = re.sub(r'\^[\d]', '', message)
+    Plugin.messages.append(clean_message)
 
   def add_command(self, name, cmd, arg_count=0):
     Plugin.registered_commands.append([name, cmd, arg_count])
@@ -82,7 +85,8 @@ class Channel(object):
   # minqlx.Plugin API here:
 
   def reply(self, message):
-    Channel.message_log = '%s\n%s' % (Channel.message_log, message)
+    clean_message = re.sub(r'\^[\d]', '', message)
+    Channel.message_log = '%s\n%s' % (Channel.message_log, clean_message)
 
 
 def reset():

@@ -12,12 +12,12 @@ import mapuche
 
 SINGLE_ALIAS_DATA = {'playa': {'mapname': 'q3wcp16', 'factory': 'ad'}}
 MULTI_ALIAS_DATA = {
-    'asilo': {'mapname': 'asylum', 'factory': 'ad'},
-    'balcon': {'mapname': '13camp', 'factory': 'ad'},
-    'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
-    'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
-    'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
-    'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
+  'asilo': {'mapname': 'asylum', 'factory': 'ad'},
+  'balcon': {'mapname': '13camp', 'factory': 'ad'},
+  'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
+  'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
+  'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+  'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
 }
 SINGLE_ALIAS_JSON = json.dumps(SINGLE_ALIAS_DATA)
 MULTI_ALIAS_JSON = json.dumps(MULTI_ALIAS_DATA)
@@ -45,12 +45,6 @@ class TestMapuche(unittest.TestCase):
         'mapuche_remove',
         'mapuche_set'],
         sorted([cmd[0] for cmd in minqlx_fake.Plugin.registered_commands]))
-
-
-  @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
-  def test_loads_aliases(self):
-    mapu = mapuche.mapuche()
-    self.assertEqual({'playa': 'q3wcp16'}, mapu.get_aliases())
 
 
   @patch('builtins.open', mock_open(read_data='invalid'))
@@ -149,9 +143,7 @@ class TestMapuche(unittest.TestCase):
     mapu = mapuche.mapuche()
     minqlx_fake.call_command(mapu.cmd_mapuche_aliases)
 
-    clean_log = re.sub(
-        r'\^[\d+]', '', minqlx_fake.Channel.message_log).replace(' ', '')
-
+    clean_log = minqlx_fake.Channel.message_log.replace(' ', '')
     for alias, data in MULTI_ALIAS_DATA.items():
       self.assertIn(
           '\n%s:%s(%s)\n' % (alias, data['mapname'], data['factory']),

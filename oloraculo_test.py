@@ -260,8 +260,7 @@ class TestOloraculo(unittest.TestCase):
     })
     minqlx_fake.call_command(olor.cmd_oloraculo)
 
-    log = [re.sub(r'(\^[\d])', '', l) for l in minqlx_fake.Plugin.messages]
-    predictions = [l for l in log if ' vs ' in l]
+    predictions = [l for l in minqlx_fake.Plugin.messages if ' vs ' in l]
     self.assertEqual(
         [
           '1.0000 : john, ringo vs paul, george',

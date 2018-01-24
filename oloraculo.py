@@ -31,35 +31,8 @@ JSON data file for reference:
 }
 """
 
-TESTING = False
-
-PRESENT_TEST = [
-  76561198014448247,
-  76561198015775820,
-  76561198045070268,
-  76561198257902041,
-  76561198261371023,
-  76561198282206581,
-  76561198280762419
-]
-
-PLAYER_ID_MAP_TEST = {
-  76561198014448247: '--bluesyquaker--',
-  76561198015775820: ']v[renga73',
-  76561198045070268: ']v[ - fundiar',
-  76561198257667410: ']v[ p-lu-k',
-  76561198257902041: 'mandiok -- ]v[ --',
-  76561198261371023: 'coco]v[crue',
-  76561198282206581: 'toro',
-  76561198280762419: 'jaunpi.diazv'
-}
-
-
 HEADER_COLOR_STRING = '^2'
-if TESTING:
-  JSON_FILE_NAME = 'oloraculo_stats.json.testing'
-else:
-  JSON_FILE_NAME = 'oloraculo_stats.json'
+JSON_FILE_NAME = 'oloraculo_stats.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 INTERESTING_GAME_TYPES = ['ad', 'ctf']
@@ -189,11 +162,6 @@ class oloraculo(minqlx.Plugin):
     # {'player_id': 'name', ...}
     self.player_id_map = {}
     self.load_stats()
-
-    # TESTING
-    if TESTING:
-      self.cmd_oloraculo(None, None, None)
-      self.cmd_oloraculo_stats(None, None, None)
 
 
   def load_stats(self):
@@ -493,24 +461,17 @@ class oloraculo(minqlx.Plugin):
     players_present = [
         p.steam_id for p in self.players() if p.team in ['red', 'blue']]
 
-    if TESTING:
-      players_present = PRESENT_TEST
-      self.player_id_map = PLAYER_ID_MAP_TEST
-
-    if len(players_present) > 1:
-      match_qualities = self.get_match_qualities(players_present)
-      self.print_header('predictions (%s)' % self.game.type_short)
-      for match in sorted(match_qualities, reverse=True)[:4]:
-        red = ', '.join([self.name_by_id(id) for id in match[1][0]])
-        blue = ', '.join([self.name_by_id(id) for id in match[1][1]])
-        # BluesyQuaker on blue:
-        if 76561198014448247 in match[1][0]:
-          red, blue = blue, red
-        self.msg('^3%.4f^7 : ^1%s ^7vs ^4%s^7' % (match[0], red, blue))
-      self.msg(' ')
-
-    else:
+    if len(players_present) < 2:
       self.print_log('Cannot predict with less than 2 players.')
+      return
 
-    if TESTING:
-      self.save_stats()
+    match_qualities = self.get_match_qualities(players_present)
+    self.print_header('predictions (%s)' % self.game.type_short)
+    for match in sorted(match_qualities, reverse=True)[:4]:
+      red = ', '.join([self.name_by_id(id) for id in match[1][0]])
+      blue = ', '.join([self.name_by_id(id) for id in match[1][1]])
+      # BluesyQuaker on blue:
+      if 76561198014448247 in match[1][0]:
+        red, blue = blue, red
+      self.msg('^3%.4f^7 : ^1%s ^7vs ^4%s^7' % (match[0], red, blue))
+    self.msg(' ')
