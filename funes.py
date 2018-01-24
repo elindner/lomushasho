@@ -18,10 +18,6 @@ class funes(minqlx.Plugin):
     self.add_command('funes', self.cmd_funes, 2)
     self.add_hook('game_start', self.handle_game_start)
 
-    # Maps steam player_id to name:
-    # {'player_id': 'name', ...}
-    self.player_id_map = {}
-
 
   def print_log(self, msg):
     self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
@@ -75,11 +71,6 @@ class funes(minqlx.Plugin):
     channel.reply(' ')
 
 
-  def populate_player_id_map(self):
-    for p in self.players():
-      self.player_id_map[p.steam_id] = self.get_clean_name(p.clean_name)
-
-
   def get_teams_history(self, game_type, teams, aggregate=False):
     game_type_history = self.history.setdefault(game_type, {})
     match_key = self.get_match_key(teams['red'], teams['blue'])
@@ -102,7 +93,6 @@ class funes(minqlx.Plugin):
 
 
   def handle_game_start(self, data):
-    self.populate_player_id_map()
     self.load_history()
 
     teams = self.teams()
