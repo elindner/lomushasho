@@ -2,10 +2,11 @@ import copy
 
 MU = 25
 
+
 class Rating(object):
   def __init__(self, mu=MU, sigma=0):
     self.mu = mu
-    self.sigma = 0 # unused in tests
+    self.sigma = 0  # unused in tests
     self.exposure = mu * 2
 
   def __repr__(self):
@@ -30,4 +31,3 @@ def rate(original_ratings, ranks):
 
 def quality(ratings):
   return sum([r.mu for r in ratings[0]]) / sum([r.mu for r in ratings[1]])
-

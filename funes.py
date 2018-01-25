@@ -11,6 +11,7 @@ JSON_FILE_NAME = 'funes_history.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
+
 class funes(minqlx.Plugin):
   def __init__(self):
     self.history = None
@@ -18,28 +19,22 @@ class funes(minqlx.Plugin):
     self.add_command('funes', self.cmd_funes, 2)
     self.add_hook('game_start', self.handle_game_start)
 
-
   def print_log(self, msg):
     self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
 
-
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
-
 
   def get_week_key(self):
     iso = datetime.date.today().isocalendar()
     return '-'.join([str(iso[0]), '%02d' % iso[1]])
 
-
   def get_team_key(self, team):
     return ':'.join(sorted([str(p.steam_id) for p in team]))
-
 
   def get_match_key(self, team_a, team_b):
     return 'v'.join(
         sorted([self.get_team_key(team_a), self.get_team_key(team_b)]))
-
 
   def load_history(self):
     try:
@@ -49,27 +44,22 @@ class funes(minqlx.Plugin):
       self.print_log('Could not load history (%s)' % e)
       self.history = {}
 
-
   def print_header(self, message):
     self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
     self.msg('%sFunes v1.0:^7 %s' % (HEADER_COLOR_STRING, message))
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-
 
   def save_history(self):
     open(JSON_FILE_PATH, 'w+').write(
         json.dumps(self.history, sort_keys=True, indent=2))
     self.print_log('History saved.')
 
-
   def get_history(self):
     return copy.deepcopy(self.history)
-
 
   def print_history(self, channel):
     self.print_header(channel, 'History')
     channel.reply(' ')
-
 
   def get_teams_history(self, game_type, teams, aggregate=False):
     game_type_history = self.history.setdefault(game_type, {})
@@ -90,7 +80,6 @@ class funes(minqlx.Plugin):
           history[1] += game_type_history[week][match][1]
 
     return history
-
 
   def handle_game_start(self, data):
     self.load_history()
@@ -124,7 +113,6 @@ class funes(minqlx.Plugin):
         red_names, red_wins, blue_wins, blue_names))
     self.msg(' Historic: ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
         red_names, red_wins_historic, blue_wins_historic, blue_names))
-
 
   def handle_game_end(self, data):
     if data['ABORTED']:
@@ -165,7 +153,5 @@ class funes(minqlx.Plugin):
     self.print_log('History updated.')
     self.save_history()
 
-
   def cmd_funes(self, player, msg, channel):
     pass
-

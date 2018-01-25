@@ -12,24 +12,24 @@ sys.modules['minqlx'] = minqlx_fake
 import funes
 
 PLAYER_ID_MAP = {
-  12: minqlx_fake.Player(12, 'john'),
-  34: minqlx_fake.Player(34, 'paul'),
-  56: minqlx_fake.Player(56, 'george'),
-  78: minqlx_fake.Player(78, 'ringo'),
-  90: minqlx_fake.Player(90, 'cthulhu'),
+    12: minqlx_fake.Player(12, 'john'),
+    34: minqlx_fake.Player(34, 'paul'),
+    56: minqlx_fake.Player(56, 'george'),
+    78: minqlx_fake.Player(78, 'ringo'),
+    90: minqlx_fake.Player(90, 'cthulhu'),
 }
 
 HISTORY_DATA = {
-  'ad': {
-    '2018-10': {
-      '12:34v56:78': [1, 2],
-      '12:56v34:78': [1, 20],
-      '12:78v34:56': [10, 0],
+    'ad': {
+        '2018-10': {
+            '12:34v56:78': [1, 2],
+            '12:56v34:78': [1, 20],
+            '12:78v34:56': [10, 0],
+        },
+        '2018-11': {
+            '12:34v56:78': [3, 5],
+        },
     },
-    '2018-11': {
-      '12:34v56:78': [3, 5],
-     },
-  },
 }
 HISTORY_JSON = json.dumps(HISTORY_DATA)
 
@@ -37,19 +37,18 @@ HISTORY_JSON = json.dumps(HISTORY_DATA)
 class FakeDateWeek10(datetime.date):
   @classmethod
   def today(cls):
-      return cls(2018, 3, 6)
+    return cls(2018, 3, 6)
 
 
 class FakeDateWeek4(datetime.date):
   @classmethod
   def today(cls):
-      return cls(2018, 1, 24)
+    return cls(2018, 1, 24)
 
 
 class TestFunes(unittest.TestCase):
   def setUp(self):
     minqlx_fake.reset()
-
 
   def assertSavedJson(self, expected, mocked_open):
     file_handle = mocked_open.return_value.__enter__.return_value
@@ -58,9 +57,13 @@ class TestFunes(unittest.TestCase):
     saved_json = write_arguments[0]
     self.assertEqual(expected, json.loads(saved_json))
 
-
   def setup_game_data(
-      self, red_team_ids, blue_team_ids, red_score, blue_score, aborted=False):
+          self,
+          red_team_ids,
+          blue_team_ids,
+          red_score,
+          blue_score,
+          aborted=False):
     players_by_teams = {'red': [], 'blue': []}
     for player_id in red_team_ids:
       players_by_teams['red'].append(PLAYER_ID_MAP[player_id])
@@ -72,13 +75,12 @@ class TestFunes(unittest.TestCase):
 
     # return the game data obj received by hook handlers.
     return {
-      'TSCORE0': red_score,
-      'TSCORE1': blue_score,
-      'SCORE_LIMIT': 15,
-      'CAPTURE_LIMIT': 8,
-      'ABORTED': aborted,
+        'TSCORE0': red_score,
+        'TSCORE1': blue_score,
+        'SCORE_LIMIT': 15,
+        'CAPTURE_LIMIT': 8,
+        'ABORTED': aborted,
     }
-
 
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
   def test_registers_commands_and_hooks(self):
@@ -91,12 +93,10 @@ class TestFunes(unittest.TestCase):
         ['game_start'],
         [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   def test_loads_history(self):
     fun = funes.funes()
     self.assertEqual(HISTORY_DATA, fun.get_history())
-
 
   @patch('builtins.open', mock_open(read_data='invalid'))
   def test_loads_history_invalid_json(self):
@@ -104,12 +104,11 @@ class TestFunes(unittest.TestCase):
     self.assertEqual({}, fun.get_history())
     # still usable
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in [34, 12]],
-      'blue': [PLAYER_ID_MAP[id] for id in [56, 78]],
+        'red': [PLAYER_ID_MAP[id] for id in [34, 12]],
+        'blue': [PLAYER_ID_MAP[id] for id in [56, 78]],
     }
     self.assertEqual([0, 0], fun.get_teams_history('ad', teams))
     self.assertEqual([0, 0], fun.get_teams_history('ad', teams, aggregate=True))
-
 
   @patch('builtins.open', new_callable=mock_open, read_data=HISTORY_JSON)
   @patch('datetime.date', FakeDateWeek4)
@@ -120,15 +119,14 @@ class TestFunes(unittest.TestCase):
     red_ids = [56, 78]
     blue_ids = [34, 12]
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in red_ids],
-      'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
+        'red': [PLAYER_ID_MAP[id] for id in red_ids],
+        'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
     }
     fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 7, 15))
 
     expected = copy.deepcopy(HISTORY_DATA)
     expected['ad']['2018-04'] = {'12:34v56:78': [1, 0]}
     self.assertSavedJson(expected, m)
-
 
   @patch('builtins.open', new_callable=mock_open, read_data=HISTORY_JSON)
   @patch('datetime.date', FakeDateWeek10)
@@ -139,8 +137,8 @@ class TestFunes(unittest.TestCase):
     red_ids = [56, 34]
     blue_ids = [78, 12]
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in red_ids],
-      'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
+        'red': [PLAYER_ID_MAP[id] for id in red_ids],
+        'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
     }
     fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 15, 14))
 
@@ -148,18 +146,16 @@ class TestFunes(unittest.TestCase):
     expected['ad']['2018-10']['12:78v34:56'] = [10, 1]
     self.assertSavedJson(expected, m)
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
   def test_get_teams_history(self):
     fun = funes.funes()
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in [34, 12]],
-      'blue': [PLAYER_ID_MAP[id] for id in [56, 78]],
+        'red': [PLAYER_ID_MAP[id] for id in [34, 12]],
+        'blue': [PLAYER_ID_MAP[id] for id in [56, 78]],
     }
     self.assertEqual([1, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([4, 7], fun.get_teams_history('ad', teams, aggregate=True))
-
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
@@ -167,7 +163,8 @@ class TestFunes(unittest.TestCase):
     fun = funes.funes()
     game_data = self.setup_game_data([56, 78], [34, 12], 7, 15)
     fun.handle_game_start(game_data)
-    inMes = lambda l, i : [a for a in l if i in a]
+
+    def inMes(l, i): return [a for a in l if i in a]
 
     # session:
     self.assertTrue(
@@ -176,7 +173,6 @@ class TestFunes(unittest.TestCase):
     self.assertTrue(
         inMes(minqlx_fake.Plugin.messages, 'george, ringo 7 v 4 john, paul'))
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_start_new_player(self):
@@ -184,7 +180,8 @@ class TestFunes(unittest.TestCase):
     # id 90 isn't in data
     game_data = self.setup_game_data([56, 78], [34, 90], 7, 15)
     fun.handle_game_start(game_data)
-    inMes = lambda l, i : [a for a in l if i in a]
+
+    def inMes(l, i): return [a for a in l if i in a]
 
     # session:
     self.assertTrue(
@@ -193,7 +190,6 @@ class TestFunes(unittest.TestCase):
     self.assertTrue(
         inMes(minqlx_fake.Plugin.messages, 'george, ringo 0 v 0 cthulhu, paul'))
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_end_no_update(self):
@@ -201,8 +197,8 @@ class TestFunes(unittest.TestCase):
     red_ids = [56, 78]
     blue_ids = [34, 12]
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in red_ids],
-      'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
+        'red': [PLAYER_ID_MAP[id] for id in red_ids],
+        'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
     }
     self.assertEqual([1, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([4, 7], fun.get_teams_history('ad', teams, aggregate=True))
@@ -222,7 +218,6 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([1, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([4, 7], fun.get_teams_history('ad', teams, aggregate=True))
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_end(self):
@@ -230,8 +225,8 @@ class TestFunes(unittest.TestCase):
     red_ids = [56, 78]
     blue_ids = [34, 12]
     teams = {
-      'red': [PLAYER_ID_MAP[id] for id in red_ids],
-      'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
+        'red': [PLAYER_ID_MAP[id] for id in red_ids],
+        'blue': [PLAYER_ID_MAP[id] for id in blue_ids],
     }
     self.assertEqual([1, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([4, 7], fun.get_teams_history('ad', teams, aggregate=True))
@@ -247,6 +242,5 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([5, 8], fun.get_teams_history('ad', teams, aggregate=True))
 
 
-
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

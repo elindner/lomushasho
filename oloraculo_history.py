@@ -12,16 +12,17 @@ GAME_TYPE = 'ad'
 FIELDS = ['mu', 'sigma', 'winloss', 'killdeath']
 
 PLAYERS_BY_ID = {
-  '76561198014448247': 'BluesyQuaker',
-  '76561198261371023': 'CocoCrue',
-  '76561198257902041': 'MandioK',
-  '76561198282206581': 'Toro',
-  '76561198045070268': ']v[ - Fundiar',
-  '76561198257667410': 'cfernan77',
-  '76561198280762419': 'juanpi.diazv',
-  '76561198015775820': 'renga73',
-  '76561197969594389': 'goras',
+    '76561198014448247': 'BluesyQuaker',
+    '76561198261371023': 'CocoCrue',
+    '76561198257902041': 'MandioK',
+    '76561198282206581': 'Toro',
+    '76561198045070268': ']v[ - Fundiar',
+    '76561198257667410': 'cfernan77',
+    '76561198280762419': 'juanpi.diazv',
+    '76561198015775820': 'renga73',
+    '76561197969594389': 'goras',
 }
+
 
 def update_history_file(stat, data, player_ids):
   file_name = '%s_%s.tsv' % (HISTORY_FILE_BASE, stat)

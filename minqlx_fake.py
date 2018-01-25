@@ -97,4 +97,3 @@ def reset():
 def call_command(command, *args, **kwargs):
   channel = Channel()
   command(None, [None] + list(args), channel)
-
