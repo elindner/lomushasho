@@ -170,6 +170,7 @@ class TestOloraculo(unittest.TestCase):
     # players loaded
     for player_id in PLAYER_ID_MAP:
       olor.handle_player_loaded(PLAYER_ID_MAP[player_id])
+
     minqlx_fake.call_command(olor.cmd_oloraculo_stats)
     for player_name in player_names:
       self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))

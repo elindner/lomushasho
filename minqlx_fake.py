@@ -1,6 +1,18 @@
 import re
 
 
+ANSI_COLOR_MAP = {
+    '^0': '\u001b[30m',  # black
+    '^1': '\u001b[31m',  # red
+    '^2': '\u001b[32m',  # green
+    '^3': '\u001b[33m',  # yellow
+    '^4': '\u001b[34m',  # blue
+    '^5': '\u001b[36m',  # cyan
+    '^6': '\u001b[35m',  # magenta
+    '^7': '\u001b[37m',  # white
+}
+
+
 class PlayerStats(object):
   def __init__(self, kills, deaths):
     self.kills = kills
@@ -62,6 +74,12 @@ class Plugin(object):
     return [player for team in self.players_by_team.values() for player in team]
 
   def msg(self, message):
+    """
+    ansi_message = message
+    for quake_color, ansi_color in ANSI_COLOR_MAP.items():
+      ansi_message = ansi_message.replace(quake_color, ansi_color)
+    print(ansi_message + ANSI_COLOR_MAP['^7'])
+    """
     clean_message = re.sub(r'\^[\d]', '', message)
     Plugin.messages.append(clean_message)
 

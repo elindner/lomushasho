@@ -1,8 +1,10 @@
 import datetime
 import copy
-import minqlx
+import itertools
 import json
+import minqlx
 import os
+import pprint
 import re
 
 
@@ -14,10 +16,16 @@ JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
 class funes(minqlx.Plugin):
   def __init__(self):
+    # List: [['yyyy-ww', 'gt', [r_ids], [b_ids], r_score, b_score], ...]
     self.history = None
     self.load_history()
     self.add_command('funes', self.cmd_funes, 2)
     self.add_hook('game_start', self.handle_game_start)
+    self.add_hook("player_loaded", self.handle_player_loaded)
+
+    # Maps steam player_id to name:
+    # {'player_id': 'name', ...}
+    self.player_id_map = {}
 
   def print_log(self, msg):
     self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
@@ -36,6 +44,15 @@ class funes(minqlx.Plugin):
     return 'v'.join(
         sorted([self.get_team_key(team_a), self.get_team_key(team_b)]))
 
+  def populate_player_id_map(self):
+    for p in self.players():
+      self.player_id_map[p.steam_id] = self.get_clean_name(p.clean_name)
+
+  def print_header(self, message):
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
+    self.msg('%sFunes v1.0:^7 %s' % (HEADER_COLOR_STRING, message))
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+
   def load_history(self):
     try:
       self.history = json.loads(open(JSON_FILE_PATH).read())
@@ -43,11 +60,6 @@ class funes(minqlx.Plugin):
     except Exception as e:
       self.print_log('Could not load history (%s)' % e)
       self.history = {}
-
-  def print_header(self, message):
-    self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
-    self.msg('%sFunes v1.0:^7 %s' % (HEADER_COLOR_STRING, message))
-    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
   def save_history(self):
     open(JSON_FILE_PATH, 'w+').write(
@@ -57,32 +69,45 @@ class funes(minqlx.Plugin):
   def get_history(self):
     return copy.deepcopy(self.history)
 
-  def print_history(self, channel):
-    self.print_header(channel, 'History')
-    channel.reply(' ')
+  def name_by_id(self, id):
+    if id in self.player_id_map:
+      return self.get_clean_name(self.player_id_map[id])
+    else:
+      return '...%s' % str(id)[8:]
 
   def get_teams_history(self, game_type, teams, aggregate=False):
-    game_type_history = self.history.setdefault(game_type, {})
-    match_key = self.get_match_key(teams['red'], teams['blue'])
+    relevant_matches = []
     week_key = self.get_week_key()
-    week_history = game_type_history.setdefault(week_key, {})
-    teams_history = week_history.setdefault(match_key, [0, 0])
+    team_0_ids = sorted(teams[0])
+    team_1_ids = sorted(teams[1])
 
-    if not aggregate:
-      return teams_history
-
-    # Return all history
     history = [0, 0]
-    for week in game_type_history:
-      for match in game_type_history[week]:
-        if match == match_key:
-          history[0] += game_type_history[week][match][0]
-          history[1] += game_type_history[week][match][1]
+    for match in self.history:
+      if not aggregate and match[0] != week_key:
+        # don't need this date
+        continue
+
+      if not (team_0_ids in match and team_1_ids in match):
+        # wrong teams
+        continue
+
+      team_0_score = match[match.index(team_0_ids) + 2]
+      team_1_score = match[match.index(team_1_ids) + 2]
+      if team_0_score > team_1_score:
+        history[0] += 1
+      elif team_0_score < team_1_score:
+        history[1] += 1
 
     return history
 
+  def handle_player_loaded(self, player):
+    player_id = player.steam_id
+    # Update name map, initialize ratings and winloss for new player.
+    self.player_id_map[player_id] = self.get_clean_name(player.clean_name)
+
   def handle_game_start(self, data):
     self.load_history()
+    self.populate_player_id_map()
 
     teams = self.teams()
     red_team = teams['red']
@@ -91,17 +116,12 @@ class funes(minqlx.Plugin):
       return
 
     game_type = self.game.type_short
+    red_ids = [p.steam_id for p in red_team]
+    blue_ids = [p.steam_id for p in blue_team]
 
-    match_key = self.get_match_key(blue_team, red_team)
-    red_key = self.get_team_key(red_team)
-    history = self.get_teams_history(game_type, teams)
-    aggregate = self.get_teams_history(game_type, teams, aggregate=True)
-    red_index = 0 if match_key.startswith(red_key) else 1
-
-    red_wins = history[red_index]
-    blue_wins = history[1 - red_index]
-    red_wins_historic = aggregate[red_index]
-    blue_wins_historic = aggregate[1 - red_index]
+    history = self.get_teams_history(game_type, [red_ids, blue_ids])
+    aggregate = self.get_teams_history(
+        game_type, [red_ids, blue_ids], aggregate=True)
 
     red_names = ', '.join(
         sorted([self.get_clean_name(p.clean_name) for p in red_team]))
@@ -110,9 +130,9 @@ class funes(minqlx.Plugin):
 
     self.print_header('teams history (%s)' % game_type)
     self.msg('    Today: ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
-        red_names, red_wins, blue_wins, blue_names))
+        red_names, history[0], history[1], blue_names))
     self.msg(' Historic: ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
-        red_names, red_wins_historic, blue_wins_historic, blue_names))
+        red_names, aggregate[0], aggregate[1], blue_names))
 
   def handle_game_end(self, data):
     if data['ABORTED']:
@@ -139,19 +159,60 @@ class funes(minqlx.Plugin):
       self.print_log('Not updating history: one or more empty teams.')
       return
 
-    teams_history = self.get_teams_history(game_type, teams)
+    datum = [
+        self.get_week_key(),
+        game_type,
+        sorted([p.steam_id for p in red_team]),
+        sorted([p.steam_id for p in blue_team]),
+        self.game.red_score,
+        self.game.blue_score]
 
-    match_key = self.get_match_key(red_team, blue_team)
-    red_key = self.get_team_key(red_team)
-    red_index = 0 if match_key.startswith(red_key) else 1
-
-    if self.game.red_score > self.game.blue_score:
-      teams_history[red_index] += 1
-    else:
-      teams_history[1 - red_index] += 1
-
+    self.history.append(datum)
     self.print_log('History updated.')
     self.save_history()
 
   def cmd_funes(self, player, msg, channel):
-    pass
+    self.populate_player_id_map()
+    game_type = self.game.type_short
+    players_present = [
+        p.steam_id for p in self.players() if p.team in ['red', 'blue']]
+
+    names_by_id = dict(zip(
+        players_present,
+        [p.clean_name for p in self.players() if p.team in ['red', 'blue']]))
+
+    if len(players_present) < 2:
+      self.print_log('No history for less than 2 players.')
+      return
+
+    players_per_team = int(len(players_present) / 2)
+    teams = list(itertools.combinations(players_present, players_per_team))
+    seen_matches = set()
+    day_line_data = []
+    aggregated_line_data = []
+
+    for team_a in teams:
+      for team_b in teams:
+        match_key = repr(sorted((sorted(team_a), sorted(team_b))))
+        if list(set(team_a) & set(team_b)) or match_key in seen_matches:
+          continue
+
+        seen_matches.add(match_key)
+        names_a = ', '.join([names_by_id[i] for i in team_a])
+        names_b = ', '.join([names_by_id[i] for i in team_b])
+        history = self.get_teams_history(game_type, (team_a, team_b))
+        aggregate = self.get_teams_history(game_type, (team_a, team_b),
+                                           aggregate=True)
+        day_line_data.append((names_a, history[0], history[1], names_b))
+        aggregated_line_data.append(
+            (names_a, aggregate[0], aggregate[1], names_b))
+
+    self.print_header('Teams history (%s)' % game_type)
+    self.msg('Today:')
+    for data in day_line_data:
+      self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+    self.msg('Since %s:' % (self.history[0][0].replace('-', 'w')))
+    for data in aggregated_line_data:
+      self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
