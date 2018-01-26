@@ -1,9 +1,10 @@
 import copy
 import datetime
 import json
-import sys
-import unittest
 import minqlx_fake
+import sys
+import test_util
+import unittest
 
 from unittest.mock import mock_open
 from unittest.mock import patch
@@ -97,31 +98,6 @@ class TestFunes(unittest.TestCase):
   def team(self, ids):
     return [PLAYER_ID_MAP[id] for id in ids]
 
-  def setup_game_data(
-          self,
-          red_team_ids,
-          blue_team_ids,
-          red_score,
-          blue_score,
-          aborted=False):
-    players_by_teams = {'red': [], 'blue': []}
-    for player_id in red_team_ids:
-      players_by_teams['red'].append(PLAYER_ID_MAP[player_id])
-    for player_id in blue_team_ids:
-      players_by_teams['blue'].append(PLAYER_ID_MAP[player_id])
-
-    minqlx_fake.Plugin.set_game(minqlx_fake.Game('ad', red_score, blue_score))
-    minqlx_fake.Plugin.set_players_by_team(players_by_teams)
-
-    # return the game data obj received by hook handlers.
-    return {
-        'TSCORE0': red_score,
-        'TSCORE1': blue_score,
-        'SCORE_LIMIT': 15,
-        'CAPTURE_LIMIT': 8,
-        'ABORTED': aborted,
-    }
-
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
   def test_registers_commands_and_hooks(self):
     fun = funes.funes()
@@ -155,7 +131,8 @@ class TestFunes(unittest.TestCase):
     # blue (12 & 34) won
     red_ids = [56, 78]
     blue_ids = [34, 12]
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 7, 15))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    minqlx_fake.end_game()
 
     expected = copy.deepcopy(HISTORY_DATA)
     expected.append(['2018-04', 'ad', [56, 78], [12, 34], 7, 15])
@@ -169,7 +146,8 @@ class TestFunes(unittest.TestCase):
     # (34, 56) wins
     red_ids = [56, 34]
     blue_ids = [78, 12]
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 15, 14))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 15, 14)
+    minqlx_fake.end_game()
 
     expected = copy.deepcopy(HISTORY_DATA)
     expected.append(['2018-10', 'ad', [34, 56], [12, 78], 15, 14])
@@ -192,8 +170,8 @@ class TestFunes(unittest.TestCase):
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_start(self):
     fun = funes.funes()
-    game_data = self.setup_game_data([56, 78], [34, 12], 7, 15)
-    fun.handle_game_start(game_data)
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [34, 12], 7, 15)
+    minqlx_fake.start_game()
 
     # session:
     self.assertInMessages('george, ringo 2 v 1 john, paul')
@@ -201,9 +179,9 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('george, ringo 3 v 2 john, paul')
 
     # flip red and blue teams:
-    minqlx_fake.Plugin.reset()
-    game_data = self.setup_game_data([12, 34], [78, 56], 15, 1)
-    fun.handle_game_start(game_data)
+    minqlx_fake.Plugin.reset_log()
+    test_util.setup_game_data(PLAYER_ID_MAP, [12, 34], [78, 56], 15, 1)
+    minqlx_fake.start_game()
 
     msgs = minqlx_fake.Plugin.messages
     # session:
@@ -216,8 +194,8 @@ class TestFunes(unittest.TestCase):
   def test_handles_game_start_new_player(self):
     fun = funes.funes()
     # id 90 isn't in data
-    game_data = self.setup_game_data([56, 78], [34, 90], 7, 15)
-    fun.handle_game_start(game_data)
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [34, 90], 7, 15)
+    minqlx_fake.start_game()
 
     msgs = minqlx_fake.Plugin.messages
     # session:
@@ -236,17 +214,20 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # aborted
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 7, 15, True))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15, True)
+    minqlx_fake.end_game()
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # no team won
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 7, 10))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 7, 10)
+    minqlx_fake.end_game()
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # empty team
-    fun.handle_game_end(self.setup_game_data([], blue_ids, 7, 15))
+    test_util.setup_game_data(PLAYER_ID_MAP, [], blue_ids, 7, 15)
+    minqlx_fake.end_game()
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
@@ -261,12 +242,14 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # blue (12 & 34) won
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 7, 15))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    minqlx_fake.end_game()
     self.assertEqual([2, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 3], fun.get_teams_history('ad', teams, aggregate=True))
 
     # red  (56 & 78) won
-    fun.handle_game_end(self.setup_game_data(red_ids, blue_ids, 15, 1))
+    test_util.setup_game_data(PLAYER_ID_MAP, red_ids, blue_ids, 15, 1)
+    minqlx_fake.end_game()
     self.assertEqual([3, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([4, 3], fun.get_teams_history('ad', teams, aggregate=True))
 

@@ -32,10 +32,16 @@ class Player(object):
 
 
 class Game(object):
-  def __init__(self, type_short, red_score=0, blue_score=0):
+  def __init__(self, type_short, red_score=0, blue_score=0, aborted=False):
     self.type_short = type_short
     self.red_score = red_score
     self.blue_score = blue_score
+    self.aborted = aborted
+
+  def __repr__(self):
+    return 'game<%s:%d-%d%s>' % (
+        self.type_short, self.red_score, self.blue_score,
+        '(aborted)' if self.aborted else '')
 
 
 class Plugin(object):
@@ -58,6 +64,9 @@ class Plugin(object):
 
   def set_game(game):
     Plugin.game = game
+
+  def reset_log():
+    Plugin.messages = []
 
   def set_players_by_team(players_by_team):
     for team in players_by_team:
@@ -115,3 +124,36 @@ def reset():
 def call_command(command, *args, **kwargs):
   channel = Channel()
   command(None, [None] + list(args), channel)
+
+
+def load_player(player):
+  run_game_hooks('player_loaded', player)
+
+
+def run_game_hooks(event, data):
+  hooks = [h for h in Plugin.registered_hooks if h[0] == event]
+  if not hooks:
+    return
+  for hook in hooks:
+    handler = hook[1]
+    handler(data)
+
+
+def end_game():
+  run_game_hooks('game_end', {
+      'TSCORE0': Plugin.game.red_score,
+      'TSCORE1': Plugin.game.blue_score,
+      'SCORE_LIMIT': 15,
+      'CAPTURE_LIMIT': 8,
+      'ABORTED': Plugin.game.aborted,
+  })
+
+
+def start_game():
+  run_game_hooks('game_start', {
+      'TSCORE0': Plugin.game.red_score,
+      'TSCORE1': Plugin.game.blue_score,
+      'SCORE_LIMIT': 15,
+      'CAPTURE_LIMIT': 8,
+      'ABORTED': Plugin.game.aborted,
+  })

@@ -1,9 +1,10 @@
 import json
+import minqlx_fake
 import re
 import sys
-import unittest
-import minqlx_fake
+import test_util
 import trueskill_fake
+import unittest
 
 from unittest.mock import mock_open
 from unittest.mock import patch
@@ -114,15 +115,15 @@ class TestOloraculo(unittest.TestCase):
     olor = oloraculo.oloraculo()
     self.assertEqual(set(), olor.get_stats().get_player_ids('ad'))
     # still usable
-    olor.handle_player_loaded(minqlx_fake.Player(123456, 'sarge'))
+    minqlx_fake.load_player(minqlx_fake.Player(123456, 'sarge'))
     self.assertEqual({123456}, olor.get_stats().get_player_ids('ad'))
 
   @patch('builtins.open', new_callable=mock_open, read_data=RATINGS_JSON)
   def test_saves_stats(self, m):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    game_data = self.setup_game_data([56, 78], [12, 34], 7, 15)
-    olor.handle_game_end(game_data)
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
+    minqlx_fake.end_game()
     expected_data = {
         'ad': {
             '12': [2, 0, 3, 1, 200, 100],
@@ -138,7 +139,7 @@ class TestOloraculo(unittest.TestCase):
     olor = oloraculo.oloraculo()
     self.assertEqual(set(), olor.get_stats().get_player_ids('ad'))
     player = minqlx_fake.Player(123456, 'sarge')
-    olor.handle_player_loaded(player)
+    minqlx_fake.load_player(player)
     self.assertEqual({123456}, olor.get_stats().get_player_ids('ad'))
     self.assertEqual([0, 0], olor.get_stats().get_winloss('ad', 123456))
     self.assertEqual([0, 0], olor.get_stats().get_killdeath('ad', 123456))
@@ -165,11 +166,11 @@ class TestOloraculo(unittest.TestCase):
     for player_name in player_names:
       self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
 
-    minqlx_fake.Plugin.reset()
+    minqlx_fake.Plugin.reset_log()
 
     # players loaded
     for player_id in PLAYER_ID_MAP:
-      olor.handle_player_loaded(PLAYER_ID_MAP[player_id])
+      minqlx_fake.load_player(PLAYER_ID_MAP[player_id])
 
     minqlx_fake.call_command(olor.cmd_oloraculo_stats)
     for player_name in player_names:
@@ -185,11 +186,11 @@ class TestOloraculo(unittest.TestCase):
     for player_name in player_names:
       self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
 
-    minqlx_fake.Plugin.reset()
+    minqlx_fake.Plugin.reset_log()
 
     # players loaded
     for player_id in PLAYER_ID_MAP:
-      olor.handle_player_loaded(PLAYER_ID_MAP[player_id])
+      minqlx_fake.load_player(PLAYER_ID_MAP[player_id])
     minqlx_fake.call_command(olor.cmd_oloraculo_stats)
     for player_name in player_names:
       self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))
@@ -198,8 +199,8 @@ class TestOloraculo(unittest.TestCase):
   def test_handles_game_end(self):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    game_data = self.setup_game_data([56, 78], [12, 34], 7, 15)
-    olor.handle_game_end(game_data)
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
+    minqlx_fake.end_game()
     stats = olor.get_stats()
     # winloss
     self.assertEqual([3, 1], stats.get_winloss('ad', 12))
@@ -218,15 +219,18 @@ class TestOloraculo(unittest.TestCase):
     original_stats = olor.get_stats()
 
     # aborted
-    olor.handle_game_end(self.setup_game_data([56, 78], [12, 34], 7, 15, True))
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15, True)
+    minqlx_fake.end_game()
     self.assertEqual(original_stats, olor.get_stats())
 
     # final score is < required (15)
-    olor.handle_game_end(self.setup_game_data([56, 78], [12, 34], 7, 14))
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 14)
+    minqlx_fake.end_game()
     self.assertEqual(original_stats, olor.get_stats())
 
     # all valid
-    olor.handle_game_end(self.setup_game_data([56, 78], [12, 34], 7, 16))
+    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 16)
+    minqlx_fake.end_game()
     self.assertNotEqual(original_stats, olor.get_stats())
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
