@@ -21,6 +21,7 @@ class funes(minqlx.Plugin):
     self.load_history()
     self.add_command('funes', self.cmd_funes, 2)
     self.add_hook('game_start', self.handle_game_start)
+    self.add_hook('game_end', self.handle_game_end)
     self.add_hook("player_loaded", self.handle_player_loaded)
 
     # Maps steam player_id to name:

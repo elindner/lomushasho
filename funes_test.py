@@ -130,7 +130,7 @@ class TestFunes(unittest.TestCase):
         [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
     self.assertEqual(
-        ['game_start', 'player_loaded'],
+        ['game_start', 'game_end', 'player_loaded'],
         [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
