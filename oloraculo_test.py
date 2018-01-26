@@ -162,7 +162,7 @@ class TestOloraculo(unittest.TestCase):
     player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
 
     # no players loaded yet
-    minqlx_fake.call_command(olor.cmd_oloraculo_stats)
+    minqlx_fake.call_command('!oloraculo_stats')
     for player_name in player_names:
       self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
 
@@ -172,7 +172,7 @@ class TestOloraculo(unittest.TestCase):
     for player_id in PLAYER_ID_MAP:
       minqlx_fake.load_player(PLAYER_ID_MAP[player_id])
 
-    minqlx_fake.call_command(olor.cmd_oloraculo_stats)
+    minqlx_fake.call_command('!oloraculo_stats')
     for player_name in player_names:
       self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))
 
@@ -182,7 +182,7 @@ class TestOloraculo(unittest.TestCase):
     player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
 
     # no players loaded yet
-    minqlx_fake.call_command(olor.cmd_oloraculo_stats)
+    minqlx_fake.call_command('!oloraculo_stats')
     for player_name in player_names:
       self.assertFalse(player_name in ''.join(minqlx_fake.Plugin.messages))
 
@@ -191,7 +191,7 @@ class TestOloraculo(unittest.TestCase):
     # players loaded
     for player_id in PLAYER_ID_MAP:
       minqlx_fake.load_player(PLAYER_ID_MAP[player_id])
-    minqlx_fake.call_command(olor.cmd_oloraculo_stats)
+    minqlx_fake.call_command('!oloraculo_stats')
     for player_name in player_names:
       self.assertTrue(player_name in ''.join(minqlx_fake.Plugin.messages))
 
@@ -237,13 +237,13 @@ class TestOloraculo(unittest.TestCase):
   def test_oloraculo_no_predictions(self):
     olor = oloraculo.oloraculo()
     # no players loaded
-    minqlx_fake.call_command(olor.cmd_oloraculo)
+    minqlx_fake.call_command('!oloraculo')
     self.assertFalse(
         [l for l in minqlx_fake.Plugin.messages if 'predictions' in l])
 
     # only 1 player loaded
     minqlx_fake.Plugin.set_players_by_team({'red': [PLAYER_ID_MAP[12]]})
-    minqlx_fake.call_command(olor.cmd_oloraculo)
+    minqlx_fake.call_command('!oloraculo')
     self.assertFalse(
         [l for l in minqlx_fake.Plugin.messages if 'predictions' in l])
 
@@ -254,7 +254,7 @@ class TestOloraculo(unittest.TestCase):
         'red': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[34]],
         'blue': [PLAYER_ID_MAP[56], PLAYER_ID_MAP[78]]
     })
-    minqlx_fake.call_command(olor.cmd_oloraculo)
+    minqlx_fake.call_command('!oloraculo')
 
     predictions = [l for l in minqlx_fake.Plugin.messages if ' vs ' in l]
     self.assertEqual(

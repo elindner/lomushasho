@@ -260,17 +260,18 @@ class TestFunes(unittest.TestCase):
     player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
 
     # no players loaded yet
-    minqlx_fake.call_command(fun.cmd_funes)
+    minqlx_fake.call_command('!funes')
+
     for player_name in player_names:
       self.assertNotInMessages(player_name)
 
     # with players
-    minqlx_fake.Plugin.reset()
+    minqlx_fake.Plugin.reset_log()
     minqlx_fake.Plugin.set_players_by_team({
         'red': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[34]],
         'blue': [PLAYER_ID_MAP[56], PLAYER_ID_MAP[78]]
     })
-    minqlx_fake.call_command(fun.cmd_funes)
+    minqlx_fake.call_command('!funes')
 
     msgs = minqlx_fake.Plugin.messages
     self.assertInMessages('john, paul  1  v  2  george, ringo')

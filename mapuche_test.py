@@ -50,8 +50,7 @@ class TestMapuche(unittest.TestCase):
     mapu = mapuche.mapuche()
     self.assertEqual({}, mapu.get_aliases())
     # still usable
-    minqlx_fake.call_command(
-        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
+    minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
     self.assertEqual(
         {'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'}},
         mapu.get_aliases())
@@ -77,8 +76,7 @@ class TestMapuche(unittest.TestCase):
     }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    minqlx_fake.call_command(
-        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
+    minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
     self.assertEqual(expected, mapu.get_aliases())
 
   @patch('builtins.open', new_callable=mock_open, read_data=SINGLE_ALIAS_JSON)
@@ -89,8 +87,7 @@ class TestMapuche(unittest.TestCase):
     }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
-    minqlx_fake.call_command(
-        mapu.cmd_mapuche_set, 'patio', 'duelingkeeps', 'ctf')
+    minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
     self.assertEqual(expected, mapu.get_aliases())
     self.assertSavedJson(expected, m)
 
@@ -98,7 +95,7 @@ class TestMapuche(unittest.TestCase):
   def test_remove(self):
     mapu = mapuche.mapuche()
     self.assertEqual(MULTI_ALIAS_DATA, mapu.get_aliases())
-    minqlx_fake.call_command(mapu.cmd_mapuche_remove, 'patio')
+    minqlx_fake.call_command('!mapuche_remove patio')
 
     self.assertEqual({
         'asilo': {'mapname': 'asylum', 'factory': 'ad'},
@@ -115,13 +112,13 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual(None, minqlx_fake.Plugin.current_factory)
     self.assertEqual(None, minqlx_fake.Plugin.current_map_name)
     # force factory
-    minqlx_fake.call_command(mapu.cmd_mapuche, 'patio', 'ad')
+    minqlx_fake.call_command('!mapuche patio ad')
     self.assertEqual('ad', minqlx_fake.Plugin.current_factory)
     self.assertEqual(
         MULTI_ALIAS_DATA['patio']['mapname'],
         minqlx_fake.Plugin.current_map_name)
     # default factory
-    minqlx_fake.call_command(mapu.cmd_mapuche, 'patio')
+    minqlx_fake.call_command('!mapuche patio')
     self.assertEqual(
         MULTI_ALIAS_DATA['patio']['factory'],
         minqlx_fake.Plugin.current_factory)
@@ -132,7 +129,7 @@ class TestMapuche(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_print_aliases(self):
     mapu = mapuche.mapuche()
-    minqlx_fake.call_command(mapu.cmd_mapuche_aliases)
+    minqlx_fake.call_command('!mapuche_aliases')
 
     clean_log = minqlx_fake.Channel.message_log.replace(' ', '')
     for alias, data in MULTI_ALIAS_DATA.items():

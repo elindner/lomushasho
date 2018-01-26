@@ -121,11 +121,6 @@ def reset():
   Channel.reset()
 
 
-def call_command(command, *args, **kwargs):
-  channel = Channel()
-  command(None, [None] + list(args), channel)
-
-
 def load_player(player):
   run_game_hooks('player_loaded', player)
 
@@ -157,3 +152,18 @@ def start_game():
       'CAPTURE_LIMIT': 8,
       'ABORTED': Plugin.game.aborted,
   })
+
+
+def call_command(command_string):
+  if not command_string.startswith('!'):
+    return
+
+  channel = Channel()
+  parts = command_string[1:].split(' ')
+  command_name = parts[0]
+  arguments = [None] + parts[1:]
+
+  commands = [c for c in Plugin.registered_commands if c[0] == command_name]
+  for command in commands:
+    fun = command[1]
+    fun(None, arguments, channel)
