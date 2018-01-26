@@ -130,10 +130,12 @@ class funes(minqlx.Plugin):
         sorted([self.get_clean_name(p.clean_name) for p in blue_team]))
 
     self.print_header('teams history (%s)' % game_type)
-    self.msg('    Today: ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
+    self.msg('  ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
         red_names, history[0], history[1], blue_names))
-    self.msg(' Historic: ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (
-        red_names, aggregate[0], aggregate[1], blue_names))
+
+    format_str = '^3%%%dd^7 v ^3%%d^7 (since %s)' % (
+        len(red_names) + 4, self.history[0][0].replace('-', 'w'))
+    self.msg(format_str % (aggregate[0], aggregate[1]))
 
   def handle_game_end(self, data):
     if data['ABORTED']:
@@ -204,16 +206,29 @@ class funes(minqlx.Plugin):
         history = self.get_teams_history(game_type, (team_a, team_b))
         aggregate = self.get_teams_history(game_type, (team_a, team_b),
                                            aggregate=True)
-        day_line_data.append((names_a, history[0], history[1], names_b))
-        aggregated_line_data.append(
-            (names_a, aggregate[0], aggregate[1], names_b))
+        if history != [0, 0]:
+          day_line_data.append((names_a, history[0], history[1], names_b))
+        if aggregate != [0, 0]:
+          aggregated_line_data.append(
+              (names_a, aggregate[0], aggregate[1], names_b))
+
+    def line_sorter(line): return -(line[1] + line[2])
+    day_line_data.sort(key=line_sorter)
+    aggregated_line_data.sort(key=line_sorter)
 
     self.print_header('Teams history (%s)' % game_type)
-    self.msg('Today:')
-    for data in day_line_data:
-      self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+    if len(day_line_data) > 0:
+      self.msg('Today:')
+      for data in day_line_data:
+        self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+    else:
+      self.msg('Today: no history with these players.')
 
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-    self.msg('Since %s:' % (self.history[0][0].replace('-', 'w')))
-    for data in aggregated_line_data:
-      self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+    since_str = 'Since %s:' % (self.history[0][0].replace('-', 'w'))
+    if len(aggregated_line_data) > 0:
+      self.msg(since_str)
+      for data in aggregated_line_data:
+        self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+    else:
+      self.msg('%s no history with these players.' % since_str)
