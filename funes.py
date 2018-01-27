@@ -57,7 +57,7 @@ class funes(minqlx.Plugin):
   def load_history(self):
     try:
       self.history = json.loads(open(JSON_FILE_PATH).read())
-      self.print_log('Loaded history.')
+      self.print_log('Loaded %s history events.' % len(self.history))
     except Exception as e:
       self.print_log('Could not load history (%s)' % e)
       self.history = {}
