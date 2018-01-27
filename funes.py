@@ -27,7 +27,7 @@ class funes(minqlx.Plugin):
     self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
 
   def get_clean_name(self, name):
-      return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
 
   def get_week_key(self):
     iso = datetime.date.today().isocalendar()
