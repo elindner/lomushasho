@@ -107,7 +107,7 @@ class TestFunes(unittest.TestCase):
         [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
     self.assertEqual(
-        ['game_start', 'game_end', 'player_loaded'],
+        ['game_start', 'game_end'],
         [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
@@ -280,10 +280,10 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     msgs = minqlx_fake.Plugin.messages
-    self.assertInMessages('peluca, coco, renga  3  v  0  blues, toro, mandiok')
-    self.assertInMessages('peluca, blues, mandiok  2  v  0  coco, toro, renga')
-    self.assertInMessages('peluca, blues, coco  0  v  1  toro, mandiok, renga')
-    self.assertInMessages('peluca, blues, renga  1  v  0  coco, toro, mandiok')
+    self.assertInMessages('mandiok, toro, blues  0  v  3  peluca, renga, coco')
+    self.assertInMessages('mandiok, peluca, blues  2  v  0  toro, renga, coco')
+    self.assertInMessages('mandiok, toro, renga  1  v  0  peluca, coco, blues')
+    self.assertInMessages('mandiok, toro, coco  0  v  1  peluca, renga, blues')
     self.assertInMessages('Today: no history with these players.')
 
     # both matches today and history
