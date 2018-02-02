@@ -66,6 +66,10 @@ class funes(minqlx.Plugin):
         # don't need this date
         continue
 
+      if match[1] != game_type:
+        # wrong game type
+        continue
+
       if not (team_0_ids in match and team_1_ids in match):
         # wrong teams
         continue
@@ -78,6 +82,12 @@ class funes(minqlx.Plugin):
         history[1] += 1
 
     return history
+
+  def get_first_week(self):
+    if len(self.history) > 0:
+      return self.history[0][0].replace('-', 'w')
+    else:
+      return 'never'
 
   def handle_game_start(self, data):
     self.load_history()
@@ -106,7 +116,7 @@ class funes(minqlx.Plugin):
                                                   history[1], blue_names))
 
     format_str = '^3%%%dd^7 v ^3%%d^7 (since %s)' % (
-        len(red_names) + 4, self.history[0][0].replace('-', 'w'))
+        len(red_names) + 4, self.get_first_week())
     self.msg(format_str % (aggregate[0], aggregate[1]))
 
   def handle_game_end(self, data):
@@ -201,7 +211,7 @@ class funes(minqlx.Plugin):
       self.msg('Today: no history with these players.')
 
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-    since_str = 'Since %s:' % (self.history[0][0].replace('-', 'w'))
+    since_str = 'Since %s:' % (self.get_first_week())
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:

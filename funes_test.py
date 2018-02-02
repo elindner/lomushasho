@@ -273,6 +273,16 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('Since 2018w10: no history with these players.')
     self.assertInMessages('Today: no history with these players.')
 
+    # no matches with this game type (but one with a different one)
+    minqlx_fake.Plugin.reset_log()
+    minqlx_fake.Plugin.set_players_by_team({
+        'red': [PLAYER_ID_MAP[15], PLAYER_ID_MAP[16]],
+        'blue': [PLAYER_ID_MAP[10], PLAYER_ID_MAP[12]]
+    })
+    minqlx_fake.call_command('!funes')
+    self.assertInMessages('Since 2018w10: no history with these players.')
+    self.assertInMessages('Today: no history with these players.')
+
     # no matches today, some history
     minqlx_fake.Plugin.reset_log()
     minqlx_fake.Plugin.set_players_by_team({
