@@ -13,15 +13,15 @@ sys.modules['minqlx'] = minqlx_fake
 import funes
 
 PLAYER_ID_MAP = {
-    10: minqlx_fake.Player(10, 'mandiok'),
-    11: minqlx_fake.Player(11, 'fundi'),
-    12: minqlx_fake.Player(12, 'toro'),
-    13: minqlx_fake.Player(13, 'peluca'),
-    14: minqlx_fake.Player(14, 'renga'),
+    10: minqlx_fake.Player(10, ']v[ - mandiok'),
+    11: minqlx_fake.Player(11, 'fundi!'),
+    12: minqlx_fake.Player(12, '==toro=='),
+    13: minqlx_fake.Player(13, 'p-lu-k'),
+    14: minqlx_fake.Player(14, 'Renga'),
     15: minqlx_fake.Player(15, 'coco'),
-    16: minqlx_fake.Player(16, 'blues'),
+    16: minqlx_fake.Player(16, ']v[ - blues'),
     17: minqlx_fake.Player(17, 'juanpi'),
-    90: minqlx_fake.Player(90, 'cthulhu'),
+    90: minqlx_fake.Player(90, '...cthulhu...'),
 }
 
 HISTORY_DATA = [
@@ -83,7 +83,8 @@ class TestFunes(unittest.TestCase):
 
   def assertInMessages(self, txt):
     self.assertTrue(
-        [line for line in minqlx_fake.Plugin.messages if txt in line])
+        [line for line in minqlx_fake.Plugin.messages if txt in line],
+        '"%s" not in messages' % txt)
 
   def assertNotInMessages(self, txt):
     self.assertFalse(
@@ -174,7 +175,7 @@ class TestFunes(unittest.TestCase):
     minqlx_fake.start_game()
 
     # session, historic
-    self.assertInMessages('fundi, peluca, renga 1 v 2 coco, mandiok, toro')
+    self.assertInMessages('fundi, p-lu-k, renga 1 v 2 coco, mandiok, toro')
     self.assertInMessages('                     1 v 3 (since 2018w10)')
 
     # flip red and blue teams:
@@ -184,7 +185,7 @@ class TestFunes(unittest.TestCase):
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
-    self.assertInMessages('coco, mandiok, toro 2 v 1 fundi, peluca, renga')
+    self.assertInMessages('coco, mandiok, toro 2 v 1 fundi, p-lu-k, renga')
     self.assertInMessages('                    3 v 1 (since 2018w10)')
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
@@ -198,8 +199,8 @@ class TestFunes(unittest.TestCase):
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
-    self.assertInMessages('fundi, peluca, renga 0 v 0 cthulhu, mandiok, toro')
-    self.assertInMessages('fundi, peluca, renga 0 v 0 cthulhu, mandiok, toro')
+    self.assertInMessages('fundi, p-lu-k, renga 0 v 0 cthulhu, mandiok, toro')
+    self.assertInMessages('fundi, p-lu-k, renga 0 v 0 cthulhu, mandiok, toro')
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
@@ -280,10 +281,10 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     msgs = minqlx_fake.Plugin.messages
-    self.assertInMessages('mandiok, toro, blues  0  v  3  peluca, renga, coco')
-    self.assertInMessages('mandiok, peluca, blues  2  v  0  toro, renga, coco')
-    self.assertInMessages('mandiok, toro, renga  1  v  0  peluca, coco, blues')
-    self.assertInMessages('mandiok, toro, coco  0  v  1  peluca, renga, blues')
+    self.assertInMessages('mandiok, toro, blues  0  v  3  p-lu-k, renga, coco')
+    self.assertInMessages('mandiok, p-lu-k, blues  2  v  0  toro, renga, coco')
+    self.assertInMessages('mandiok, toro, renga  1  v  0  p-lu-k, coco, blues')
+    self.assertInMessages('mandiok, toro, coco  0  v  1  p-lu-k, renga, blues')
     self.assertInMessages('Today: no history with these players.')
 
     # both matches today and history
@@ -294,13 +295,13 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     msgs = minqlx_fake.Plugin.messages
-    self.assertInMessages('mandiok, toro, coco  2  v  1  fundi, peluca, renga')
-    self.assertInMessages('mandiok, toro, peluca  1  v  1  fundi, renga, coco')
-    self.assertInMessages('mandiok, fundi, toro  1  v  0  peluca, renga, coco')
-    self.assertInMessages('mandiok, fundi, toro  5  v  2  peluca, renga, coco')
-    self.assertInMessages('mandiok, toro, coco  3  v  1  fundi, peluca, renga')
-    self.assertInMessages('mandiok, toro, peluca  1  v  1  fundi, renga, coco')
-    self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, peluca, coco')
+    self.assertInMessages('mandiok, toro, coco  2  v  1  fundi, p-lu-k, renga')
+    self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
+    self.assertInMessages('mandiok, fundi, toro  1  v  0  p-lu-k, renga, coco')
+    self.assertInMessages('mandiok, fundi, toro  5  v  2  p-lu-k, renga, coco')
+    self.assertInMessages('mandiok, toro, coco  3  v  1  fundi, p-lu-k, renga')
+    self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
+    self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco')
 
 
 if __name__ == '__main__':

@@ -152,7 +152,8 @@ class funes(minqlx.Plugin):
     ]
     names_by_id = dict(
         zip(players_present, [
-            p.clean_name for p in self.players() if p.team in ['red', 'blue']
+            self.get_clean_name(p.clean_name)
+            for p in self.players() if p.team in ['red', 'blue']
         ]))
 
     if len(players_present) < 2:
@@ -195,7 +196,7 @@ class funes(minqlx.Plugin):
     if len(day_line_data) > 0:
       self.msg('Today:')
       for data in day_line_data:
-        self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' % data)
     else:
       self.msg('Today: no history with these players.')
 
@@ -204,6 +205,6 @@ class funes(minqlx.Plugin):
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:
-        self.msg('^3%24s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' % data)
     else:
       self.msg('%s no history with these players.' % since_str)
