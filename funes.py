@@ -16,6 +16,8 @@ JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
 class funes(minqlx.Plugin):
   def __init__(self):
+    # Dict: {'red':[id, ...], 'blue':[id, ...]}
+    self.current_teams = {}
     # List: [['yyyy-ww', 'gt', [r_ids], [b_ids], r_score, b_score], ...]
     self.history = None
     self.load_history()
@@ -25,6 +27,9 @@ class funes(minqlx.Plugin):
 
   def print_log(self, msg):
     self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
+
+  def print_error(self, msg):
+    self.msg('%sFunes:^1 %s' % (HEADER_COLOR_STRING, msg))
 
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
@@ -43,7 +48,7 @@ class funes(minqlx.Plugin):
       self.history = json.loads(open(JSON_FILE_PATH).read())
       self.print_log('Loaded %s history events.' % len(self.history))
     except Exception as e:
-      self.print_log('Could not load history (%s)' % e)
+      self.print_error('Could not load history (%s)' % e)
       self.history = []
 
   def save_history(self):
@@ -93,6 +98,7 @@ class funes(minqlx.Plugin):
     self.load_history()
 
     teams = self.teams()
+    self.current_teams = copy.deepcopy(teams)
     red_team = teams['red']
     blue_team = teams['blue']
     if len(red_team) == 0 or len(blue_team) == 0:
@@ -120,6 +126,9 @@ class funes(minqlx.Plugin):
     self.msg(format_str % (aggregate[0], aggregate[1]))
 
   def handle_game_end(self, data):
+    teams = copy.deepcopy(self.current_teams)
+    self.current_teams = {}
+
     if data['ABORTED']:
       self.print_log('Not updating history: game was aborted.')
       return
@@ -137,7 +146,6 @@ class funes(minqlx.Plugin):
       self.print_log('Not updating history: no team won.')
       return
 
-    teams = self.teams()
     red_team = teams['red']
     blue_team = teams['blue']
     if len(red_team) == 0 or len(blue_team) == 0:

@@ -263,7 +263,7 @@ class TestFunes(unittest.TestCase):
 
   @patch('builtins.open', new_callable=fake_open, fake=FakeFile(HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
-  def dont_test_handles_game_end_bis(self, m):
+  def test_handles_game_end_player_left(self, m):
     fun = funes.funes()
     red_ids = [10, 11, 12]
     blue_ids = [15, 13, 14]
@@ -271,15 +271,20 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([1, 0], fun.get_teams_history('ad', teams))
     self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
-    # blue won
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    # start game with 2v2 players
+    minqlx_fake.start_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    current_teams = fun.teams()
+    self.assertEqual(3, len(fun.teams()['red']))
+    self.assertEqual(3, len(fun.teams()['blue']))
+
+    # one player leaves.
+    current_teams['red'].pop()
+    minqlx_fake.Plugin.set_players_by_team(current_teams)
+
+    # blue won. should update according to starting teams.
+    minqlx_fake.end_game()
     self.assertEqual([1, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([5, 3], fun.get_teams_history('ad', teams, aggregate=True))
-
-    # red won
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 15, 1)
-    self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
-    self.assertEqual([6, 3], fun.get_teams_history('ad', teams, aggregate=True))
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
