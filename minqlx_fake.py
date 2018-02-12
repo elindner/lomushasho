@@ -144,7 +144,20 @@ def end_game():
   })
 
 
-def start_game():
+def start_game(
+        player_id_map,
+        red_team_ids,
+        blue_team_ids,
+        red_score,
+        blue_score,
+        aborted=False):
+  setup_game_data(
+      player_id_map,
+      red_team_ids,
+      blue_team_ids,
+      red_score,
+      blue_score,
+      aborted)
   run_game_hooks('game_start', {
       'TSCORE0': Plugin.game.red_score,
       'TSCORE1': Plugin.game.blue_score,
@@ -152,6 +165,40 @@ def start_game():
       'CAPTURE_LIMIT': 8,
       'ABORTED': Plugin.game.aborted,
   })
+
+
+def run_game(
+        player_id_map,
+        red_team_ids,
+        blue_team_ids,
+        red_score,
+        blue_score,
+        aborted=False):
+  start_game(
+      player_id_map,
+      red_team_ids,
+      blue_team_ids,
+      red_score,
+      blue_score,
+      aborted)
+  end_game()
+
+
+def setup_game_data(
+        player_id_map,
+        red_team_ids,
+        blue_team_ids,
+        red_score,
+        blue_score,
+        aborted=False):
+    players_by_teams = {'red': [], 'blue': []}
+    for player_id in red_team_ids:
+      players_by_teams['red'].append(player_id_map[player_id])
+    for player_id in blue_team_ids:
+      players_by_teams['blue'].append(player_id_map[player_id])
+
+    Plugin.set_game(Game('ad', red_score, blue_score, aborted))
+    Plugin.set_players_by_team(players_by_teams)
 
 
 def call_command(command_string):

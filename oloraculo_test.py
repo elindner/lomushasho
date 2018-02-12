@@ -2,7 +2,7 @@ import json
 import minqlx_fake
 import re
 import sys
-import test_util
+import minqlx_fake
 import trueskill_fake
 import unittest
 
@@ -42,31 +42,6 @@ class TestOloraculo(unittest.TestCase):
     write_arguments = first_write[0]
     saved_json = write_arguments[0]
     self.assertEqual(expected, json.loads(saved_json))
-
-  def setup_game_data(
-          self,
-          red_team_ids,
-          blue_team_ids,
-          red_score,
-          blue_score,
-          aborted=False):
-    players_by_teams = {'red': [], 'blue': []}
-    for player_id in red_team_ids:
-      players_by_teams['red'].append(PLAYER_ID_MAP[player_id])
-    for player_id in blue_team_ids:
-      players_by_teams['blue'].append(PLAYER_ID_MAP[player_id])
-
-    minqlx_fake.Plugin.set_game(minqlx_fake.Game('ad', red_score, blue_score))
-    minqlx_fake.Plugin.set_players_by_team(players_by_teams)
-
-    # return the game data obj received by hook handlers.
-    return {
-        'TSCORE0': red_score,
-        'TSCORE1': blue_score,
-        'SCORE_LIMIT': 15,
-        'CAPTURE_LIMIT': 8,
-        'ABORTED': aborted,
-    }
 
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
   def test_registers_commands_and_hooks(self):
@@ -122,8 +97,7 @@ class TestOloraculo(unittest.TestCase):
   def test_saves_stats(self, m):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
-    minqlx_fake.end_game()
+    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
     expected_data = {
         'ad': {
             '12': [2, 0, 3, 1, 200, 100],
@@ -199,8 +173,7 @@ class TestOloraculo(unittest.TestCase):
   def test_handles_game_end(self):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
-    minqlx_fake.end_game()
+    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
     stats = olor.get_stats()
     # winloss
     self.assertEqual([3, 1], stats.get_winloss('ad', 12))
@@ -219,18 +192,15 @@ class TestOloraculo(unittest.TestCase):
     original_stats = olor.get_stats()
 
     # aborted
-    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15, True)
-    minqlx_fake.end_game()
+    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15, True)
     self.assertEqual(original_stats, olor.get_stats())
 
     # final score is < required (15)
-    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 14)
-    minqlx_fake.end_game()
+    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 14)
     self.assertEqual(original_stats, olor.get_stats())
 
     # all valid
-    test_util.setup_game_data(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 16)
-    minqlx_fake.end_game()
+    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 16)
     self.assertNotEqual(original_stats, olor.get_stats())
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
