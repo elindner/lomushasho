@@ -94,6 +94,9 @@ class funes(minqlx.Plugin):
     else:
       return 'never'
 
+  # Workaround for invalid (empty?) teams() data on start, see:
+  # https://github.com/MinoMino/minqlx-plugins/blob/96ef6f4ff630128a6c404ef3f3ca20a60c9bca6c/ban.py#L940
+  @minqlx.delay(1)
   def handle_game_start(self, data):
     self.load_history()
 
@@ -102,6 +105,7 @@ class funes(minqlx.Plugin):
     red_team = teams['red']
     blue_team = teams['blue']
     if len(red_team) == 0 or len(blue_team) == 0:
+      self.print_log('Teams are empty on game start.')
       return
 
     game_type = self.game.type_short
