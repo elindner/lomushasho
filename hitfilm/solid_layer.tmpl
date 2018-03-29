@@ -1,0 +1,248 @@
+            <AssetLayer Version="15">
+              <AssetID>{%ASSET_ID%}</AssetID>
+              <AssetInstanceStart>0</AssetInstanceStart>
+              <AssetHasAudio>0</AssetHasAudio>
+              <AssetHasVideo>1</AssetHasVideo>
+              <AssetHadAudio>0</AssetHadAudio>
+              <AssetHadVideo>1</AssetHadVideo>
+              <AssetType>2</AssetType>
+              <Dimensions>0</Dimensions>
+              <AutoOrient>0</AutoOrient>
+              <AutoOrientPathAxis>1</AutoOrientPathAxis>
+              <AutoOrientLayer>00000000-0000-0000-0000-000000000000</AutoOrientLayer>
+              <PromoteLights>0</PromoteLights>
+              <IncludeInDepthMap>1</IncludeInDepthMap>
+              <DepthLayerID>00000000-0000-0000-0000-000000000000</DepthLayerID>
+              <WaveformIsVisible>0</WaveformIsVisible>
+              <Trackers/>
+              <Effects/>
+              <Masks/>
+              <LayerBase Version="0">
+                <ID>{%LAYER_ID%}</ID>
+                <Name>Black background</Name>
+                <CompID>{%COMPOSITION_ASSET_ID%}</CompID>
+                <ParentLayerID>00000000-0000-0000-0000-000000000000</ParentLayerID>
+                <StartFrame>0</StartFrame>
+                <EndFrame>{%END_FRAME%}</EndFrame>
+                <BlendMode>0</BlendMode>
+                <Visible>1</Visible>
+                <Muted>0</Muted>
+                <Locked>0</Locked>
+                <MotionBlurOn>0</MotionBlurOn>
+                <PropertyManager Version="5">
+                  <rotationZ Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>0</fl>
+                    </Default>
+                  </rotationZ>
+                  <audioLevel Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>0</fl>
+                    </Default>
+                  </audioLevel>
+                  <anchorPoint Type="0" CanInterpT="1" Spatial="1">
+                    <Default V="4">
+                      <p3 Y="0" X="0" Z="0"/>
+                    </Default>
+                  </anchorPoint>
+                  <position Type="0" CanInterpT="1" Spatial="1">
+                    <Default V="4">
+                      <p3 Y="0" X="0" Z="0"/>
+                    </Default>
+                  </position>
+                  <scale Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <sc Y="100" X="100" Z="100"/>
+                    </Default>
+                  </scale>
+                  <rotationY Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>0</fl>
+                    </Default>
+                  </rotationY>
+                  <scaleLinked Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>1</b>
+                    </Default>
+                  </scaleLinked>
+                  <castAmbientOcclusion Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </castAmbientOcclusion>
+                  <orientation Type="0" CanInterpT="1" Spatial="1">
+                    <Default V="4">
+                      <or Y="0" X="0" Z="0"/>
+                    </Default>
+                  </orientation>
+                  <rotationX Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>0</fl>
+                    </Default>
+                  </rotationX>
+                  <opacity Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>100</fl>
+                    </Default>
+                    <Static V="4">
+                      <fl>100</fl>
+                    </Static>
+                    <Animation>
+                      <Key STp="2" Tp="1" V="5" Ti="0">
+                        <TLk>0</TLk>
+                        <SLk>0</SLk>
+                        <Vl V="4">
+                          <fl>100</fl>
+                        </Vl>
+                      </Key>
+                      <Key STp="2" Tp="1" V="5" Ti="1000">
+                        <TLk>0</TLk>
+                        <SLk>0</SLk>
+                        <Vl V="4">
+                          <fl>0</fl>
+                        </Vl>
+                      </Key>
+                      <Key STp="2" Tp="1" V="5" Ti="{%FADE_OUT_START%}">
+                        <TLk>0</TLk>
+                        <SLk>0</SLk>
+                        <Vl V="4">
+                          <fl>0</fl>
+                        </Vl>
+                      </Key>
+                      <Key STp="2" Tp="1" V="5" Ti="{%FADE_OUT_END%}">
+                        <TLk>0</TLk>
+                        <SLk>0</SLk>
+                        <Vl V="4">
+                          <fl>100</fl>
+                        </Vl>
+                      </Key>
+                    </Animation>
+                  </opacity>
+                  <speed Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <db>1</db>
+                    </Default>
+                  </speed>
+                  <illuminated Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>1</b>
+                    </Default>
+                  </illuminated>
+                  <receiveShadows Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>1</b>
+                    </Default>
+                  </receiveShadows>
+                  <matShininess Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>100</fl>
+                    </Default>
+                  </matShininess>
+                  <shadowColor Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <cl R="0" B="0" G="0" A="1"/>
+                    </Default>
+                  </shadowColor>
+                  <castShadows Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </castShadows>
+                  <matEmissiveColor Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <cl R="0" B="0" G="0" A="1"/>
+                    </Default>
+                  </matEmissiveColor>
+                  <castShadowsIfLayerDisabled Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </castShadowsIfLayerDisabled>
+                  <billboardedShadows Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </billboardedShadows>
+                  <billboardedLights Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </billboardedLights>
+                  <matAmbient Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>100</fl>
+                    </Default>
+                  </matAmbient>
+                  <matDiffuse Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>50</fl>
+                    </Default>
+                  </matDiffuse>
+                  <matSpecular Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>50</fl>
+                    </Default>
+                  </matSpecular>
+                  <castReflections Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </castReflections>
+                  <castReflectionsIfLayerDisabled Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </castReflectionsIfLayerDisabled>
+                  <receiveReflections Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </receiveReflections>
+                  <specularReflectivity Type="0" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>100</fl>
+                    </Default>
+                  </specularReflectivity>
+                  <receiveAmbientOcclusion Type="1" CanInterpT="0" Spatial="0">
+                    <Default V="4">
+                      <b>0</b>
+                    </Default>
+                  </receiveAmbientOcclusion>
+                  <aoSamples Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <i>4</i>
+                    </Default>
+                  </aoSamples>
+                  <aoSampleRadius Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <i>15</i>
+                    </Default>
+                  </aoSampleRadius>
+                  <aoIntensity Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>50</fl>
+                    </Default>
+                  </aoIntensity>
+                  <aoDepthScale Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>10</fl>
+                    </Default>
+                  </aoDepthScale>
+                  <aoBias Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>0.01</fl>
+                    </Default>
+                  </aoBias>
+                  <aoBlurRadius Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <i>5</i>
+                    </Default>
+                  </aoBlurRadius>
+                  <aoDepthFallOff Type="1" CanInterpT="1" Spatial="0">
+                    <Default V="4">
+                      <fl>10</fl>
+                    </Default>
+                  </aoDepthFallOff>
+                </PropertyManager>
+              </LayerBase>
+            </AssetLayer>
