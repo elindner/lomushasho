@@ -37,6 +37,10 @@ CLIP_LENGTH = 73
 COMPOSITION_ASSET_ID = 'f08de726-c1fc-4a37-b6ee-59b33aae2489'
 
 
+def log(msg):
+  sys.stderr.write('%s\n' % msg)
+
+
 def r(xml, tag, string):
   return xml.replace(tag, string)
 
@@ -54,6 +58,7 @@ def get_id():
 
 
 def get_media_length(file_path):
+  log('...getting media length for %s' % file_path)
   option = ['-show_entries', 'stream=duration']
   ffprobe_output = subprocess.check_output(
       [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [file_path])
@@ -61,6 +66,7 @@ def get_media_length(file_path):
 
 
 def get_clip_framerate(file_path):
+  log('...getting media framerate for %s' % file_path)
   option = ['-show_entries', 'stream=avg_frame_rate']
   ffprobe_output = subprocess.check_output(
       [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [file_path])
@@ -173,11 +179,19 @@ def make_project(data):
   composition_assets = {}
   composite_shots = []
 
-  for datum in data:
-    clip_start = datum['start']
-    date = datum['date']
+  for index, datum in enumerate(data):
     title = datum['title']
+    date = datum['date']
     file_name = datum['file_name']
+    clip_start = datum['start']
+
+    log('')
+    log('-----')
+    log('Making composition %d/%d:' % (index + 1, len(data)))
+    log('- title: %s' % title)
+    log('- date: %s' % date)
+    log('- clip file: %s' % file_name)
+    log('- start time: %s' % clip_start)
 
     file_path = os.path.join(os.getcwd(), file_name)
     media_length = get_media_length(file_path)
@@ -226,6 +240,8 @@ def make_project(data):
 
 
 def get_data_from_csv(file_name):
+  log('parsing data file: %s' % file_name)
+
   lines = [l.strip() for l in open(file_name).readlines()]
   data = []
   for line in lines:
@@ -238,9 +254,13 @@ def get_data_from_csv(file_name):
         'date': parts[2],
         'start': seconds
     })
+
+  log('will create %d compositions' % len(data))
   return data
 
 
+"""
+# Sample data:
 DATA = [
     {
         'file_name': 'abajo.mp4',
@@ -249,21 +269,18 @@ DATA = [
         'start': 30
     },
     {
-        'file_name': 'comela.mp4',
-        'title': 'comela, mandiok!',
-        'date': '8-12-1977',
-        'start': 0
-    },
-    {
         'file_name': 'salgo.mp4',
         'title': 'Salgo Coco...',
         'date': '8-12-1977',
         'start': 0
     },
 ]
+"""
 
 if len(sys.argv) < 2:
-  sys.stderr.write('Need a file to process\n')
+  log('Need a file to process')
   sys.exit(1)
 
-print make_project(get_data_from_csv(sys.argv[1]))
+file_name = sys.argv[1]
+log('Input file is %s' % file_name)
+print make_project(get_data_from_csv(file_name))
