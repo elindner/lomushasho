@@ -21,7 +21,7 @@ import re
 import subprocess
 import sys
 
-FFPROBE_BIN = './ffprobe'
+FFPROBE_BIN = 'ffprobe'
 FFPROBE_OPTIONS = [
     '-v', 'error',
     #    '-show_entries', 'stream=avg_frame_rate,duration',
@@ -123,6 +123,7 @@ def make_media_layer(
 
 def make_media_asset(
         asset_id, layer_id, composition_asset_id, file_path, frame_rate):
+  file_path = file_path.replace('/mnt/d/', 'D:\\').replace('/', '\\')
   xml = ''.join(open('media_asset.tmpl').read())
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%LAYER_ID%}', layer_id)
