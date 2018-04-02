@@ -45,6 +45,17 @@ def r(xml, tag, string):
   return xml.replace(tag, string)
 
 
+def get_effective_media_path(file_path):
+  # "bash on windows":
+  if os.path.isfile('/proc/version'):
+    if 'Microsoft' in open('/proc/version').read():
+      drive = re.findall(r'/mnt/([a-z])/', file_path)[0].upper()
+      return re.sub(r'/mnt/./', '%s:' % drive, file_path).replace('/', '\\')
+
+  # Everything else
+  return file_path
+
+
 def get_hex(size):
   HEX = '0123456789abcdef'
   cs = []
@@ -57,22 +68,16 @@ def get_id():
   return '-'.join([get_hex(8), get_hex(4), get_hex(4), get_hex(4), get_hex(12)])
 
 
-def get_media_length(file_path):
-  log('...getting media length for %s' % file_path)
-  option = ['-show_entries', 'stream=duration']
-  ffprobe_output = subprocess.check_output(
-      [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [file_path])
-  return int(math.floor(float(ffprobe_output.strip())))
-
-
-def get_clip_framerate(file_path):
+def get_media_info(file_path):
   log('...getting media framerate for %s' % file_path)
-  option = ['-show_entries', 'stream=avg_frame_rate']
+  option = ['-show_entries', 'stream=avg_frame_rate,duration']
   ffprobe_output = subprocess.check_output(
       [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [file_path])
-  num = int(ffprobe_output.strip().split('/')[0])
-  den = int(ffprobe_output.strip().split('/')[1])
-  return float(num) / float(den)
+  output_lines = ffprobe_output.split('\n')
+  num = int(output_lines[0].strip().split('/')[0])
+  den = int(output_lines[0].strip().split('/')[1])
+  duration = int(math.floor(float(output_lines[1].strip())))
+  return {'frame_rate': float(num) / float(den), 'duration': duration}
 
 
 def make_paragraph(text, format_id):
@@ -129,7 +134,7 @@ def make_media_layer(
 
 def make_media_asset(
         asset_id, layer_id, composition_asset_id, file_path, frame_rate):
-  file_path = file_path.replace('/mnt/d/', 'D:\\').replace('/', '\\')
+  file_path = get_effective_media_path(file_path)
   xml = ''.join(open('media_asset.tmpl').read())
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%LAYER_ID%}', layer_id)
@@ -194,8 +199,9 @@ def make_project(data):
     log('- start time: %s' % clip_start)
 
     file_path = os.path.join(os.getcwd(), file_name)
-    media_length = get_media_length(file_path)
-    media_frame_rate = get_clip_framerate(file_path)
+    media_info = get_media_info(file_path)
+    media_length = media_info['duration']
+    media_frame_rate = media_info['frame_rate']
     frame_count = (media_length - clip_start) * FRAMERATE
     fade_out_start = (media_length - clip_start - 1) * 1000
 
