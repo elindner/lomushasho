@@ -36,6 +36,7 @@ CLIP_FRAMERATE = 30
 CLIP_LENGTH = 73
 
 COMPOSITION_ASSET_ID = 'f08de726-c1fc-4a37-b6ee-59b33aae2489'
+template_path = os.getcwd()
 
 
 def log(msg):
@@ -46,6 +47,10 @@ def r(xml, tag, string):
   return xml.replace(tag, string)
 
 
+def read_template(template_name):
+  return ''.join(open(os.path.join(template_path, template_name)).read())
+
+
 def get_effective_media_path(file_path):
   # "bash on windows":
   if os.path.isfile('/proc/version'):
@@ -53,7 +58,7 @@ def get_effective_media_path(file_path):
       drive = re.findall(r'/mnt/([a-z])/', file_path)[0].upper()
       return re.sub(r'/mnt/./', '%s:' % drive, file_path).replace('/', '\\')
 
-  # Everything else
+  # Everything else:
   return file_path
 
 
@@ -70,10 +75,14 @@ def get_id():
 
 
 def get_media_info(file_path):
-  log('...getting media framerate for %s' % file_path)
+  # In bash on windows, the CSV file lists file paths in windows
+  # format (D:\path\to\file.mp4) but here we need Unix directories.
+  effective_file_path = get_effective_media_path(file_path)
+
+  log('...getting media framerate for %s' % effective_file_path)
   option = ['-show_entries', 'stream=avg_frame_rate,duration']
   ffprobe_output = subprocess.check_output(
-      [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [file_path])
+      [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [effective_file_path])
   output_lines = ffprobe_output.split('\n')
   num = int(output_lines[0].strip().split('/')[0])
   den = int(output_lines[0].strip().split('/')[1])
@@ -94,7 +103,7 @@ def make_text_layer(composition_asset_id, title, date):
   separator_format_id = get_id()
   date_format_id = get_id()
 
-  xml = ''.join(open('text_layer.tmpl').read())
+  xml = read_template('text_layer.tmpl')
   xml = r(xml, '{%LAYER_ID%}', get_id())
   xml = r(xml, '{%COMPOSITION_ASSET_ID%}', composition_asset_id)
   xml = r(xml, '{%TITLE_FORMAT_ID%}', title_format_id)
@@ -108,7 +117,7 @@ def make_text_layer(composition_asset_id, title, date):
 
 def make_composition_asset(
         asset_id, title, date, frame_count, solid_layer, media_layer):
-  xml = ''.join(open('composition_asset.tmpl').read())
+  xml = read_template('composition_asset.tmpl')
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%TITLE%}', title)
   xml = r(xml, '{%FRAME_COUNT%}', '%d' % frame_count)
@@ -121,7 +130,7 @@ def make_composition_asset(
 def make_media_layer(
         asset_id, layer_id, composition_asset_id, clip_start, end_frame,
         fade_out_start):
-  xml = ''.join(open('media_layer.tmpl').read())
+  xml = read_template('media_layer.tmpl')
   xml = r(xml, '{%LAYER_ID%}', layer_id)
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%BLUR_ID%}', get_id())
@@ -135,8 +144,7 @@ def make_media_layer(
 
 def make_media_asset(
         asset_id, layer_id, composition_asset_id, file_path, frame_rate):
-  file_path = get_effective_media_path(file_path)
-  xml = ''.join(open('media_asset.tmpl').read())
+  xml = read_template('media_asset.tmpl')
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%LAYER_ID%}', layer_id)
   xml = r(xml, '{%FILE_PATH%}', file_path)
@@ -147,7 +155,7 @@ def make_media_asset(
 
 def make_solid_layer(
         asset_id, layer_id, composition_asset_id, end_frame, fade_out_start):
-  xml = ''.join(open('solid_layer.tmpl').read())
+  xml = read_template('solid_layer.tmpl')
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%LAYER_ID%}', layer_id)
   xml = r(xml, '{%COMPOSITION_ASSET_ID%}', composition_asset_id)
@@ -158,7 +166,7 @@ def make_solid_layer(
 
 
 def make_solid_asset(asset_id, layer_id, composition_asset_id):
-  xml = ''.join(open('solid_asset.tmpl').read())
+  xml = read_template('solid_asset.tmpl')
   xml = r(xml, '{%ASSET_ID%}', asset_id)
   xml = r(xml, '{%LAYER_ID%}', layer_id)
   xml = r(xml, '{%COMPOSITION_ASSET_ID%}', composition_asset_id)
@@ -169,7 +177,7 @@ def make_asset_list(composition_assets, solid_assets, media_assets):
   def make_id_tags(assets):
     return ''.join(['<ID>%s</ID>' % id for id in assets.keys()])
 
-  xml = ''.join(open('asset_list.tmpl').read())
+  xml = read_template('asset_list.tmpl')
   xml = r(xml, '{%COMPOSITION_ASSETS%}', ''.join(composition_assets.values()))
   xml = r(xml, '{%SOLID_ASSETS%}', ''.join(solid_assets.values()))
   xml = r(xml, '{%MEDIA_ASSETS%}', ''.join(media_assets.values()))
@@ -239,14 +247,14 @@ def make_project(data):
   asset_list = make_asset_list(
       solid_assets, media_assets, composition_assets)
 
-  xml = ''.join(open('project.tmpl').read())
+  xml = read_template('project.tmpl')
   xml = r(xml, '{%ASSET_LIST%}', asset_list)
   xml = r(xml, '{%COMPOSITE_SHOTS%}', ''.join(composite_shots))
 
   return xml
 
 
-def get_data_from_csv(file_name):
+def get_data_from_csv(template_path, file_name):
   log('parsing data file: %s' % file_name)
 
   lines = [l.strip() for l in open(file_name).readlines()]
@@ -284,10 +292,23 @@ DATA = [
 ]
 """
 
+
 if len(sys.argv) < 2:
   log('Need a file to process')
   sys.exit(1)
 
+# Find the base directory of the running script, which
+# will be used as the base path where to find templates.
+template_path = os.path.dirname(sys.argv[0])
+
 file_name = sys.argv[1]
 log('Input file is %s' % file_name)
-print make_project(get_data_from_csv(file_name))
+
+output_file_name = '%s.hfp' % file_name
+log('Output file is %s' % output_file_name)
+
+open(output_file_name, 'w').write(
+    make_project(get_data_from_csv(template_path, file_name)))
+
+log('')
+log('All done.')
