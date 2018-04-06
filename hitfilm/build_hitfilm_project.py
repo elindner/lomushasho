@@ -12,7 +12,7 @@ comela.mp4|comela, mandiok!|8-12-1977|00:00
 salgo.mp4|Salgo Coco...|8-12-1977|01:40
 
 NOTE: this requires ffprobe somewhere in PATH
-TODO: need to add end_time too 
+TODO: need to add end_time too
 """
 
 import math
@@ -55,8 +55,9 @@ def get_effective_media_path(file_path):
   # "bash on windows":
   if os.path.isfile('/proc/version'):
     if 'Microsoft' in open('/proc/version').read():
-      drive = re.findall(r'/mnt/([a-z])/', file_path)[0].upper()
-      return re.sub(r'/mnt/./', '%s:' % drive, file_path).replace('/', '\\')
+      # drive = re.findall(r'/mnt/([a-z])/', file_path)[0].upper()
+      # return re.sub(r'/mnt/./', '%s:' % drive, file_path).replace('/', '\\')
+      return file_path.replace('\\', '/')
 
   # Everything else:
   return file_path
@@ -79,7 +80,7 @@ def get_media_info(file_path):
   # format (D:\path\to\file.mp4) but here we need Unix directories.
   effective_file_path = get_effective_media_path(file_path)
 
-  log('...getting media framerate for %s' % effective_file_path)
+  log('...getting media info for %s' % effective_file_path)
   option = ['-show_entries', 'stream=avg_frame_rate,duration']
   ffprobe_output = subprocess.check_output(
       [FFPROBE_BIN] + FFPROBE_OPTIONS + option + [effective_file_path])
@@ -207,7 +208,7 @@ def make_project(data):
     log('- clip file: %s' % file_name)
     log('- start time: %s' % clip_start)
 
-    file_path = os.path.join(os.getcwd(), file_name)
+    file_path = file_name
     media_info = get_media_info(file_path)
     media_length = media_info['duration']
     media_frame_rate = media_info['frame_rate']
