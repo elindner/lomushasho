@@ -93,7 +93,7 @@ def get_media_info(file_path):
 
 def make_paragraph(text, format_id):
   lines = ['<Tk Tp="1" ID="%s" Jf="1"/>' % get_id()]
-  for char in text:
+  for char in unicode(text, 'utf-8'):
     lines.append('<Tk Ch="%d" Tp="0" ID="%s" Ft="%s"/>' % (
         ord(char), get_id(), format_id))
   return ''.join(lines)
