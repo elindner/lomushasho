@@ -15,6 +15,7 @@ NOTE: this requires ffprobe somewhere in PATH
 TODO: need to add end_time too
 """
 
+import argparse
 import math
 import os
 import random
@@ -293,23 +294,23 @@ DATA = [
 ]
 """
 
+parser = argparse.ArgumentParser(description='Do some stuff')
+parser.add_argument('--file', type=str, required=True,
+                    help='The CSV file to process')
 
-if len(sys.argv) < 2:
-  log('Need a file to process')
-  sys.exit(1)
+args = parser.parse_args()
 
 # Find the base directory of the running script, which
 # will be used as the base path where to find templates.
 template_path = os.path.dirname(sys.argv[0])
 
-file_name = sys.argv[1]
-log('Input file is %s' % file_name)
+log('Input file is %s' % args.file)
 
-output_file_name = '%s.hfp' % file_name
+output_file_name = '%s.hfp' % args.file
 log('Output file is %s' % output_file_name)
 
 open(output_file_name, 'w').write(
-    make_project(get_data_from_csv(template_path, file_name)))
+    make_project(get_data_from_csv(template_path, args.file)))
 
 log('')
 log('All done.')
