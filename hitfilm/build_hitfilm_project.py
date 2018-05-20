@@ -294,9 +294,10 @@ DATA = [
 ]
 """
 
-parser = argparse.ArgumentParser(description='Do some stuff')
-parser.add_argument('--file', type=str, required=True,
-                    help='The CSV file to process')
+parser = argparse.ArgumentParser(
+    description='Build a HitFilm project from a CSV file.')
+parser.add_argument('--file_name', type=str, required=True,
+                    help='The CSV file to process.')
 
 args = parser.parse_args()
 
@@ -304,13 +305,13 @@ args = parser.parse_args()
 # will be used as the base path where to find templates.
 template_path = os.path.dirname(sys.argv[0])
 
-log('Input file is %s' % args.file)
+log('Input file is %s' % args.file_name)
 
-output_file_name = '%s.hfp' % args.file
+output_file_name = '%s.hfp' % args.file_name
 log('Output file is %s' % output_file_name)
 
 open(output_file_name, 'w').write(
-    make_project(get_data_from_csv(template_path, args.file)))
+    make_project(get_data_from_csv(template_path, args.file_name)))
 
 log('')
 log('All done.')
