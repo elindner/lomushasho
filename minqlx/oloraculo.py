@@ -444,9 +444,6 @@ class oloraculo(minqlx.Plugin):
     for match in match_qualities:
       red = ', '.join([self.name_by_id(id) for id in match[1][0]])
       blue = ', '.join([self.name_by_id(id) for id in match[1][1]])
-      # BluesyQuaker on blue:
-      # if 76561198014448247 in match[1][0]:
-      #   red, blue = blue, red
       self.msg('^3%.4f^7 : ^1%s ^7vs ^4%s^7' % (match[0], red, blue))
     self.msg(' ')
 
