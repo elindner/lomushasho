@@ -234,6 +234,37 @@ class TestOloraculo(unittest.TestCase):
             '0.4286 : john, paul vs george, ringo'
         ], predictions)
 
+  @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
+  def test_oloraculo_move_players(self):
+    olor = oloraculo.oloraculo()
+    minqlx_fake.Plugin.set_players_by_team({
+        'red': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[34], PLAYER_ID_MAP[56], PLAYER_ID_MAP[78]],
+        'blue': [],
+    })
+
+    # predictions are:
+    #   '1.0000 : john, ringo vs paul, george'
+    #   '0.6667 : john, george vs paul, ringo'
+    #   '0.4286 : john, paul vs george, ringo'
+    def teams(): return [PLAYER_ID_MAP[i].team for i in [12, 34, 56, 78]]
+
+    # invalid, no change
+    minqlx_fake.call_command('!oloraculo 0')
+    self.assertEqual(['red', 'red', 'red', 'red'], teams())
+
+    minqlx_fake.call_command('!oloraculo 1')
+    self.assertEqual(['red', 'blue', 'blue', 'red'], teams())
+
+    minqlx_fake.call_command('!oloraculo 2')
+    self.assertEqual(['red', 'blue', 'red', 'blue'], teams())
+
+    minqlx_fake.call_command('!oloraculo 3')
+    self.assertEqual(['red', 'red', 'blue', 'blue'], teams())
+
+    # invalid, no change
+    minqlx_fake.call_command('!oloraculo 4')
+    self.assertEqual(['red', 'red', 'blue', 'blue'], teams())
+
 
 if __name__ == '__main__':
   unittest.main()

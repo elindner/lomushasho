@@ -135,7 +135,7 @@ class Db(object):
 
 class oloraculo(minqlx.Plugin):
   def __init__(self):
-    self.add_command('oloraculo', self.cmd_oloraculo)
+    self.add_command('oloraculo', self.cmd_oloraculo, 1)
     self.add_command('oloraculo_stats', self.cmd_oloraculo_stats)
     self.add_hook('game_end', self.handle_game_end)
     self.add_hook('game_start', self.handle_game_start)
@@ -431,13 +431,33 @@ class oloraculo(minqlx.Plugin):
       self.print_log('Cannot predict with less than 2 players.')
       return
 
-    match_qualities = self.get_match_qualities(players_present)
+    # Only take the first 4 matches.
+    match_qualities = sorted(
+        self.get_match_qualities(players_present), reverse=True)[:4]
+
+    for match in match_qualities:
+      # BluesyQuaker on blue:
+      if 76561198014448247 in match[1][0]:
+        match[1][0], match[1][1] = match[1][1], match[1][0]
+
     self.print_header('predictions (%s)' % self.game.type_short)
-    for match in sorted(match_qualities, reverse=True)[:4]:
+    for match in match_qualities:
       red = ', '.join([self.name_by_id(id) for id in match[1][0]])
       blue = ', '.join([self.name_by_id(id) for id in match[1][1]])
       # BluesyQuaker on blue:
-      if 76561198014448247 in match[1][0]:
-        red, blue = blue, red
+      # if 76561198014448247 in match[1][0]:
+      #   red, blue = blue, red
       self.msg('^3%.4f^7 : ^1%s ^7vs ^4%s^7' % (match[0], red, blue))
     self.msg(' ')
+
+    if len(msg) > 1 and msg[1].isdigit():
+      index = int(msg[1]) - 1
+      if index < 0 or index > len(match_qualities) - 1:
+        return
+      red_team = match_qualities[index][1][0]
+      blue_team = match_qualities[index][1][1]
+      for player in self.players():
+        if player.steam_id in red_team:
+          player.put('red')
+        elif player.steam_id in blue_team:
+          player.put('blue')

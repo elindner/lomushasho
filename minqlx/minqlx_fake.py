@@ -30,6 +30,9 @@ class Player(object):
   def __repr__(self):
     return 'Player<%d:%s(%s)>' % (self.steam_id, self.name, self.team)
 
+  def put(self, team):
+    self.team = team
+
 
 class Game(object):
   def __init__(self, type_short, red_score=0, blue_score=0, aborted=False):
@@ -114,6 +117,10 @@ class Channel(object):
   def reply(self, message):
     clean_message = re.sub(r'\^[\d]', '', message)
     Channel.message_log = '%s\n%s' % (Channel.message_log, clean_message)
+
+
+def delay(time):
+  return lambda x: x
 
 
 def reset():
