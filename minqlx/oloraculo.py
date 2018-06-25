@@ -188,6 +188,9 @@ class oloraculo(minqlx.Plugin):
         if list(set(team_a) & set(team_b)) or match_key in seen_matches:
           continue
 
+        if (76561198282206581 in team_a and 76561198257902041 in team_a) or (76561198282206581 in team_b and 76561198257902041 in team_b):
+          continue
+
         seen_matches.add(match_key)
 
         team_a_ratings = [
