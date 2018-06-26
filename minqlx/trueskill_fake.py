@@ -4,6 +4,7 @@ MU = 25
 
 
 class Rating(object):
+
   def __init__(self, mu=MU, sigma=0):
     self.mu = mu
     self.sigma = 0  # unused in tests

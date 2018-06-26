@@ -5,8 +5,6 @@ import minqlx
 import os
 import re
 import trueskill
-
-
 """
 Steam Ids, for reference
 76561197969594389 - goras
@@ -19,7 +17,6 @@ Steam Ids, for reference
 76561198282206581 - toro
 76561198280762419 - juanpi
 """
-
 """
 JSON data file for reference:
 {
@@ -39,6 +36,7 @@ INTERESTING_GAME_TYPES = ['ad', 'ctf']
 
 
 class Db(object):
+
   def __init__(self):
     # {'game_type': {'player_id': trueskill.Rating, ...}, ...}
     self._ratings_dict = {}
@@ -52,7 +50,7 @@ class Db(object):
   def __eq__(self, other):
     return (self._ratings_dict == other._ratings_dict) and (
         self._winloss_dict == other._winloss_dict) and (
-        self._killdeath_dict == other._killdeath_dict)
+            self._killdeath_dict == other._killdeath_dict)
 
   def _ratings(self, game_type):
     return self._ratings_dict.setdefault(game_type, {})
@@ -105,8 +103,8 @@ class Db(object):
     for game_type in json_data:
       for player_id in player_ids:
         data = json_data[game_type][player_id]
-        self.set_rating(
-            game_type, player_id, trueskill.Rating(data[0], data[1]))
+        self.set_rating(game_type, player_id, trueskill.Rating(
+            data[0], data[1]))
         self.set_winloss(game_type, player_id, [data[2], data[3]])
         self.set_killdeath(game_type, player_id, [data[4], data[5]])
 
@@ -126,14 +124,15 @@ class Db(object):
         winloss = self.get_winloss(game_type, player_id)
         killdeath = self.get_killdeath(game_type, player_id)
         data[str(player_id)] = [
-            rating.mu, rating.sigma,
-            winloss[0], winloss[1],
-            killdeath[0], killdeath[1]]
+            rating.mu, rating.sigma, winloss[0], winloss[1], killdeath[0],
+            killdeath[1]
+        ]
 
     open(file_name, 'w+').write(json.dumps(json_data, sort_keys=True, indent=2))
 
 
 class oloraculo(minqlx.Plugin):
+
   def __init__(self):
     self.add_command('oloraculo', self.cmd_oloraculo, 1)
     self.add_command('oloraculo_stats', self.cmd_oloraculo_stats)
@@ -198,9 +197,11 @@ class oloraculo(minqlx.Plugin):
         seen_matches.add(match_key)
 
         team_a_ratings = [
-            self.get_player_ratings(player_id) for player_id in team_a]
+            self.get_player_ratings(player_id) for player_id in team_a
+        ]
         team_b_ratings = [
-            self.get_player_ratings(player_id) for player_id in team_b]
+            self.get_player_ratings(player_id) for player_id in team_b
+        ]
 
         quality = trueskill.quality([team_a_ratings, team_b_ratings])
         match_qualities.append([quality, [team_a, team_b]])
@@ -401,16 +402,16 @@ class oloraculo(minqlx.Plugin):
       max_kd = max(max_kd, max(killdeath))
       max_wl = max(max_wl, max(winloss))
       line_data.append([
-          name, rating.exposure,
-          winloss[0], winloss[1],
-          killdeath[0], killdeath[1]])
+          name, rating.exposure, winloss[0], winloss[1], killdeath[0],
+          killdeath[1]
+      ])
 
     for player_name, exposure, win, loss, kill, death in sorted(
-            line_data, key=lambda x: x[1], reverse=True):
+        line_data, key=lambda x: x[1], reverse=True):
       wl_str = get_ratio_string('wl', max_wl, win, loss)
       kd_str = get_ratio_string('kd', max_kd, kill, death)
-      self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' % (
-          player_name, exposure, wl_str, kd_str))
+      self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' % (player_name, exposure, wl_str,
+                                                  kd_str))
     self.msg(' ')
 
   def print_log(self, msg):
@@ -432,7 +433,8 @@ class oloraculo(minqlx.Plugin):
     game_type = self.game.type_short
     self.populate_player_id_map()
     players_present = [
-        p.steam_id for p in self.players() if p.team in ['red', 'blue']]
+        p.steam_id for p in self.players() if p.team in ['red', 'blue']
+    ]
 
     if len(players_present) < 2:
       self.print_log('Cannot predict with less than 2 players.')

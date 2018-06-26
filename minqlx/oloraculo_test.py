@@ -33,6 +33,7 @@ PLAYER_ID_MAP = {
 
 
 class TestOloraculo(unittest.TestCase):
+
   def setUp(self):
     minqlx_fake.reset()
 
@@ -46,15 +47,12 @@ class TestOloraculo(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
   def test_registers_commands_and_hooks(self):
     olor = oloraculo.oloraculo()
-    self.assertEqual([
-        'oloraculo',
-        'oloraculo_stats'],
+    self.assertEqual(
+        ['oloraculo', 'oloraculo_stats'],
         sorted([cmd[0] for cmd in minqlx_fake.Plugin.registered_commands]))
 
-    self.assertEqual([
-        'game_end',
-        'game_start',
-        'player_loaded'],
+    self.assertEqual(
+        ['game_end', 'game_start', 'player_loaded'],
         sorted([hook[0] for hook in minqlx_fake.Plugin.registered_hooks]))
 
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
@@ -75,15 +73,13 @@ class TestOloraculo(unittest.TestCase):
     for player_id in stats.get_player_ids('ad'):
       self.assertTrue(player_id in expected_stats)
       expected_player = expected_stats[player_id]
-      expected_rating = trueskill_fake.Rating(
-          expected_player[0], expected_player[1])
+      expected_rating = trueskill_fake.Rating(expected_player[0],
+                                              expected_player[1])
       self.assertEqual(expected_rating, stats.get_rating('ad', player_id))
-      self.assertEqual(
-          [expected_player[2], expected_player[3]],
-          stats.get_winloss('ad', player_id))
-      self.assertEqual(
-          [expected_player[4], expected_player[5]],
-          stats.get_killdeath('ad', player_id))
+      self.assertEqual([expected_player[2], expected_player[3]],
+                       stats.get_winloss('ad', player_id))
+      self.assertEqual([expected_player[4], expected_player[5]],
+                       stats.get_killdeath('ad', player_id))
 
   @patch('builtins.open', mock_open(read_data='invalid'))
   def test_loads_stats_invalid_json(self):
@@ -227,18 +223,20 @@ class TestOloraculo(unittest.TestCase):
     minqlx_fake.call_command('!oloraculo')
 
     predictions = [l for l in minqlx_fake.Plugin.messages if ' vs ' in l]
-    self.assertEqual(
-        [
-            '1.0000 : john, ringo vs paul, george',
-            '0.6667 : john, george vs paul, ringo',
-            '0.4286 : john, paul vs george, ringo'
-        ], predictions)
+    self.assertEqual([
+        '1.0000 : john, ringo vs paul, george',
+        '0.6667 : john, george vs paul, ringo',
+        '0.4286 : john, paul vs george, ringo'
+    ], predictions)
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
   def test_oloraculo_move_players(self):
     olor = oloraculo.oloraculo()
     minqlx_fake.Plugin.set_players_by_team({
-        'red': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[34], PLAYER_ID_MAP[56], PLAYER_ID_MAP[78]],
+        'red': [
+            PLAYER_ID_MAP[12], PLAYER_ID_MAP[34], PLAYER_ID_MAP[56],
+            PLAYER_ID_MAP[78]
+        ],
         'blue': [],
     })
 
@@ -246,7 +244,8 @@ class TestOloraculo(unittest.TestCase):
     #   '1.0000 : john, ringo vs paul, george'
     #   '0.6667 : john, george vs paul, ringo'
     #   '0.4286 : john, paul vs george, ringo'
-    def teams(): return [PLAYER_ID_MAP[i].team for i in [12, 34, 56, 78]]
+    def teams():
+      return [PLAYER_ID_MAP[i].team for i in [12, 34, 56, 78]]
 
     # invalid, no change
     minqlx_fake.call_command('!oloraculo 0')

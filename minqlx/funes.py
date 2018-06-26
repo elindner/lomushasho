@@ -7,7 +7,6 @@ import os
 import pprint
 import re
 
-
 HEADER_COLOR_STRING = '^2'
 JSON_FILE_NAME = 'funes_history.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -15,6 +14,7 @@ JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
 
 class funes(minqlx.Plugin):
+
   def __init__(self):
     # Dict: {'red':[id, ...], 'blue':[id, ...]}
     self.current_teams = {}
@@ -125,8 +125,8 @@ class funes(minqlx.Plugin):
     self.msg('  ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (red_names, history[0],
                                                   history[1], blue_names))
 
-    format_str = '^3%%%dd^7 v ^3%%d^7 (since %s)' % (
-        len(red_names) + 4, self.get_first_week())
+    format_str = '^3%%%dd^7 v ^3%%d^7 (since %s)' % (len(red_names) + 4,
+                                                     self.get_first_week())
     self.msg(format_str % (aggregate[0], aggregate[1]))
 
   def handle_game_end(self, data):
@@ -175,7 +175,8 @@ class funes(minqlx.Plugin):
     names_by_id = dict(
         zip(players_present, [
             self.get_clean_name(p.clean_name)
-            for p in self.players() if p.team in ['red', 'blue']
+            for p in self.players()
+            if p.team in ['red', 'blue']
         ]))
 
     if len(players_present) < 2:

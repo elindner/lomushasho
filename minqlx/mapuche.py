@@ -2,7 +2,6 @@ import minqlx
 import json
 import os
 
-
 HEADER_COLOR_STRING = '^2'
 JSON_FILE_NAME = 'mapuche_aliases.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -10,6 +9,7 @@ JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
 
 class mapuche(minqlx.Plugin):
+
   def __init__(self):
     self.load_aliases()
 

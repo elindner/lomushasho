@@ -12,18 +12,37 @@ import mapuche
 
 SINGLE_ALIAS_DATA = {'playa': {'mapname': 'q3wcp16', 'factory': 'ad'}}
 MULTI_ALIAS_DATA = {
-    'asilo': {'mapname': 'asylum', 'factory': 'ad'},
-    'balcon': {'mapname': '13camp', 'factory': 'ad'},
-    'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
-    'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
-    'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
-    'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
+    'asilo': {
+        'mapname': 'asylum',
+        'factory': 'ad'
+    },
+    'balcon': {
+        'mapname': '13camp',
+        'factory': 'ad'
+    },
+    'herradura': {
+        'mapname': 'courtyard',
+        'factory': 'ad'
+    },
+    'lapidas': {
+        'mapname': 'railyard',
+        'factory': 'ad'
+    },
+    'patio': {
+        'mapname': 'duelingkeeps',
+        'factory': 'ctf'
+    },
+    'playa': {
+        'mapname': 'q3wcp16',
+        'factory': 'ad'
+    },
 }
 SINGLE_ALIAS_JSON = json.dumps(SINGLE_ALIAS_DATA)
 MULTI_ALIAS_JSON = json.dumps(MULTI_ALIAS_DATA)
 
 
 class TestMapuche(unittest.TestCase):
+
   def setUp(self):
     minqlx_fake.reset()
 
@@ -38,12 +57,9 @@ class TestMapuche(unittest.TestCase):
   def test_registers_commands(self):
     mapu = mapuche.mapuche()
     self.assertEqual([
-        'mapuche',
-        'mapuche_aliases',
-        'mapuche_reload',
-        'mapuche_remove',
-        'mapuche_set'],
-        sorted([cmd[0] for cmd in minqlx_fake.Plugin.registered_commands]))
+        'mapuche', 'mapuche_aliases', 'mapuche_reload', 'mapuche_remove',
+        'mapuche_set'
+    ], sorted([cmd[0] for cmd in minqlx_fake.Plugin.registered_commands]))
 
   @patch('builtins.open', mock_open(read_data='invalid'))
   def test_loads_aliases_invalid_json(self):
@@ -51,9 +67,12 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual({}, mapu.get_aliases())
     # still usable
     minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
-    self.assertEqual(
-        {'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'}},
-        mapu.get_aliases())
+    self.assertEqual({
+        'patio': {
+            'mapname': 'duelingkeeps',
+            'factory': 'ctf'
+        }
+    }, mapu.get_aliases())
 
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_loads_aliases(self):
@@ -71,8 +90,14 @@ class TestMapuche(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_set(self):
     expected = {
-        'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
-        'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+        'playa': {
+            'mapname': 'q3wcp16',
+            'factory': 'ad'
+        },
+        'patio': {
+            'mapname': 'duelingkeeps',
+            'factory': 'ctf'
+        },
     }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
@@ -82,8 +107,14 @@ class TestMapuche(unittest.TestCase):
   @patch('builtins.open', new_callable=mock_open, read_data=SINGLE_ALIAS_JSON)
   def test_set_saves(self, m):
     expected = {
-        'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
-        'patio': {'mapname': 'duelingkeeps', 'factory': 'ctf'},
+        'playa': {
+            'mapname': 'q3wcp16',
+            'factory': 'ad'
+        },
+        'patio': {
+            'mapname': 'duelingkeeps',
+            'factory': 'ctf'
+        },
     }
     mapu = mapuche.mapuche()
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
@@ -98,13 +129,27 @@ class TestMapuche(unittest.TestCase):
     minqlx_fake.call_command('!mapuche_remove patio')
 
     self.assertEqual({
-        'asilo': {'mapname': 'asylum', 'factory': 'ad'},
-        'balcon': {'mapname': '13camp', 'factory': 'ad'},
-        'herradura': {'mapname': 'courtyard', 'factory': 'ad'},
-        'lapidas': {'mapname': 'railyard', 'factory': 'ad'},
-        'playa': {'mapname': 'q3wcp16', 'factory': 'ad'},
-    },
-        mapu.get_aliases())
+        'asilo': {
+            'mapname': 'asylum',
+            'factory': 'ad'
+        },
+        'balcon': {
+            'mapname': '13camp',
+            'factory': 'ad'
+        },
+        'herradura': {
+            'mapname': 'courtyard',
+            'factory': 'ad'
+        },
+        'lapidas': {
+            'mapname': 'railyard',
+            'factory': 'ad'
+        },
+        'playa': {
+            'mapname': 'q3wcp16',
+            'factory': 'ad'
+        },
+    }, mapu.get_aliases())
 
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_change_map(self):
@@ -114,17 +159,14 @@ class TestMapuche(unittest.TestCase):
     # force factory
     minqlx_fake.call_command('!mapuche patio ad')
     self.assertEqual('ad', minqlx_fake.Plugin.current_factory)
-    self.assertEqual(
-        MULTI_ALIAS_DATA['patio']['mapname'],
-        minqlx_fake.Plugin.current_map_name)
+    self.assertEqual(MULTI_ALIAS_DATA['patio']['mapname'],
+                     minqlx_fake.Plugin.current_map_name)
     # default factory
     minqlx_fake.call_command('!mapuche patio')
-    self.assertEqual(
-        MULTI_ALIAS_DATA['patio']['factory'],
-        minqlx_fake.Plugin.current_factory)
-    self.assertEqual(
-        MULTI_ALIAS_DATA['patio']['mapname'],
-        minqlx_fake.Plugin.current_map_name)
+    self.assertEqual(MULTI_ALIAS_DATA['patio']['factory'],
+                     minqlx_fake.Plugin.current_factory)
+    self.assertEqual(MULTI_ALIAS_DATA['patio']['mapname'],
+                     minqlx_fake.Plugin.current_map_name)
 
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_print_aliases(self):
@@ -133,9 +175,8 @@ class TestMapuche(unittest.TestCase):
 
     clean_log = minqlx_fake.Channel.message_log.replace(' ', '')
     for alias, data in MULTI_ALIAS_DATA.items():
-      self.assertIn(
-          '\n%s:%s(%s)\n' % (alias, data['mapname'], data['factory']),
-          clean_log)
+      self.assertIn('\n%s:%s(%s)\n' % (alias, data['mapname'], data['factory']),
+                    clean_log)
 
 
 if __name__ == '__main__':

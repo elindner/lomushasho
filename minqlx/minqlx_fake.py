@@ -1,6 +1,5 @@
 import re
 
-
 ANSI_COLOR_MAP = {
     '^0': '\u001b[30m',  # black
     '^1': '\u001b[31m',  # red
@@ -14,12 +13,14 @@ ANSI_COLOR_MAP = {
 
 
 class PlayerStats(object):
+
   def __init__(self, kills, deaths):
     self.kills = kills
     self.deaths = deaths
 
 
 class Player(object):
+
   def __init__(self, steam_id, name, team=None, kills=0, deaths=0):
     self.steam_id = steam_id
     self.name = name
@@ -35,6 +36,7 @@ class Player(object):
 
 
 class Game(object):
+
   def __init__(self, type_short, red_score=0, blue_score=0, aborted=False):
     self.type_short = type_short
     self.red_score = red_score
@@ -42,9 +44,9 @@ class Game(object):
     self.aborted = aborted
 
   def __repr__(self):
-    return 'game<%s:%d-%d%s>' % (
-        self.type_short, self.red_score, self.blue_score,
-        '(aborted)' if self.aborted else '')
+    return 'game<%s:%d-%d%s>' % (self.type_short, self.red_score,
+                                 self.blue_score, '(aborted)'
+                                 if self.aborted else '')
 
 
 class Plugin(object):
@@ -142,70 +144,59 @@ def run_game_hooks(event, data):
 
 
 def end_game():
-  run_game_hooks('game_end', {
-      'TSCORE0': Plugin.game.red_score,
-      'TSCORE1': Plugin.game.blue_score,
-      'SCORE_LIMIT': 15,
-      'CAPTURE_LIMIT': 8,
-      'ABORTED': Plugin.game.aborted,
-  })
+  run_game_hooks(
+      'game_end', {
+          'TSCORE0': Plugin.game.red_score,
+          'TSCORE1': Plugin.game.blue_score,
+          'SCORE_LIMIT': 15,
+          'CAPTURE_LIMIT': 8,
+          'ABORTED': Plugin.game.aborted,
+      })
 
 
-def start_game(
-        player_id_map,
-        red_team_ids,
-        blue_team_ids,
-        red_score,
-        blue_score,
-        aborted=False):
-  setup_game_data(
-      player_id_map,
-      red_team_ids,
-      blue_team_ids,
-      red_score,
-      blue_score,
-      aborted)
-  run_game_hooks('game_start', {
-      'TSCORE0': Plugin.game.red_score,
-      'TSCORE1': Plugin.game.blue_score,
-      'SCORE_LIMIT': 15,
-      'CAPTURE_LIMIT': 8,
-      'ABORTED': Plugin.game.aborted,
-  })
+def start_game(player_id_map,
+               red_team_ids,
+               blue_team_ids,
+               red_score,
+               blue_score,
+               aborted=False):
+  setup_game_data(player_id_map, red_team_ids, blue_team_ids, red_score,
+                  blue_score, aborted)
+  run_game_hooks(
+      'game_start', {
+          'TSCORE0': Plugin.game.red_score,
+          'TSCORE1': Plugin.game.blue_score,
+          'SCORE_LIMIT': 15,
+          'CAPTURE_LIMIT': 8,
+          'ABORTED': Plugin.game.aborted,
+      })
 
 
-def run_game(
-        player_id_map,
-        red_team_ids,
-        blue_team_ids,
-        red_score,
-        blue_score,
-        aborted=False):
-  start_game(
-      player_id_map,
-      red_team_ids,
-      blue_team_ids,
-      red_score,
-      blue_score,
-      aborted)
+def run_game(player_id_map,
+             red_team_ids,
+             blue_team_ids,
+             red_score,
+             blue_score,
+             aborted=False):
+  start_game(player_id_map, red_team_ids, blue_team_ids, red_score, blue_score,
+             aborted)
   end_game()
 
 
-def setup_game_data(
-        player_id_map,
-        red_team_ids,
-        blue_team_ids,
-        red_score,
-        blue_score,
-        aborted=False):
-    players_by_teams = {'red': [], 'blue': []}
-    for player_id in red_team_ids:
-      players_by_teams['red'].append(player_id_map[player_id])
-    for player_id in blue_team_ids:
-      players_by_teams['blue'].append(player_id_map[player_id])
+def setup_game_data(player_id_map,
+                    red_team_ids,
+                    blue_team_ids,
+                    red_score,
+                    blue_score,
+                    aborted=False):
+  players_by_teams = {'red': [], 'blue': []}
+  for player_id in red_team_ids:
+    players_by_teams['red'].append(player_id_map[player_id])
+  for player_id in blue_team_ids:
+    players_by_teams['blue'].append(player_id_map[player_id])
 
-    Plugin.set_game(Game('ad', red_score, blue_score, aborted))
-    Plugin.set_players_by_team(players_by_teams)
+  Plugin.set_game(Game('ad', red_score, blue_score, aborted))
+  Plugin.set_players_by_team(players_by_teams)
 
 
 def call_command(command_string):

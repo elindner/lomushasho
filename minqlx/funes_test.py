@@ -32,7 +32,6 @@ HISTORY_DATA = [
     ['2018-10', 'ad', [10, 12, 15], [11, 13, 14], 15, 12],
     ['2018-10', 'ad', [11, 14, 15], [10, 12, 13], 16, 8],
     ['2018-10', 'ad', [10, 12, 13], [11, 14, 15], 16, 7],
-
     ['2018-11', 'ad', [13, 14, 16], [10, 12, 15], 16, 14],
     ['2018-11', 'ad', [11, 13, 14], [12, 15, 16], 15, 11],
     ['2018-11', 'ad', [10, 12, 15], [11, 13, 14], 17, 8],
@@ -40,7 +39,6 @@ HISTORY_DATA = [
     ['2018-11', 'ad', [13, 14, 15], [10, 11, 12], 16, 13],
     ['2018-11', 'ad', [10, 11, 12], [13, 14, 15], 21, 20],
     ['2018-11', 'ad', [13, 14, 15], [10, 11, 12], 15, 2],
-
     ['2018-12', 'ad', [10, 15], [11, 13], 16, 11],
     ['2018-12', 'ad', [10, 13, 14], [11, 15, 16], 17, 12],
     ['2018-12', 'ad', [11, 14, 15, 17], [10, 12, 13, 16], 15, 2],
@@ -51,7 +49,6 @@ HISTORY_DATA = [
     ['2018-12', 'ad', [13, 14, 15], [10, 12, 16], 17, 7],
     ['2018-12', 'ad', [13, 14, 15], [10, 12, 16], 18, 16],
     ['2018-12', 'ctf', [15, 16], [10, 12], 8, 3],
-
     ['2018-13', 'ad', [10, 12, 14], [11, 13, 16], 15, 5],
     ['2018-13', 'ad', [10, 12, 14], [11, 13, 16], 15, 0],
     ['2018-13', 'ad', [11, 14, 15], [10, 13, 16], 16, 14],
@@ -67,6 +64,7 @@ HISTORY_JSON = json.dumps(HISTORY_DATA)
 
 
 class FakeFile(object):
+
   def __init__(self, data):
     self._data = data
 
@@ -82,18 +80,21 @@ def fake_open(fake):
 
 
 class FakeDateWeek10(datetime.date):
+
   @classmethod
   def today(cls):
     return cls(2018, 3, 6)
 
 
 class FakeDateWeek4(datetime.date):
+
   @classmethod
   def today(cls):
     return cls(2018, 1, 24)
 
 
 class TestFunes(unittest.TestCase):
+
   def setUp(self):
     minqlx_fake.reset()
 
@@ -119,13 +120,11 @@ class TestFunes(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
   def test_registers_commands_and_hooks(self):
     fun = funes.funes()
-    self.assertEqual(
-        ['funes'],
-        [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
+    self.assertEqual(['funes'],
+                     [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
-    self.assertEqual(
-        ['game_start', 'game_end'],
-        [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
+    self.assertEqual(['game_start', 'game_end'],
+                     [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   def test_loads_history(self):
@@ -186,8 +185,7 @@ class TestFunes(unittest.TestCase):
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_start(self):
     fun = funes.funes()
-    minqlx_fake.start_game(
-        PLAYER_ID_MAP, [11, 13, 14], [12, 10, 15], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, [11, 13, 14], [12, 10, 15], 7, 15)
 
     # session, historic
     self.assertInMessages('fundi, p-lu-k, renga 1 v 2 coco, mandiok, toro')
@@ -195,8 +193,7 @@ class TestFunes(unittest.TestCase):
 
     # flip red and blue teams:
     minqlx_fake.Plugin.reset_log()
-    minqlx_fake.start_game(
-        PLAYER_ID_MAP, [12, 10, 15], [11, 13, 14], 15, 1)
+    minqlx_fake.start_game(PLAYER_ID_MAP, [12, 10, 15], [11, 13, 14], 15, 1)
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
@@ -208,8 +205,7 @@ class TestFunes(unittest.TestCase):
   def test_handles_game_start_new_player(self):
     fun = funes.funes()
     # id 90 isn't in data
-    minqlx_fake.start_game(
-        PLAYER_ID_MAP, [11, 13, 14], [12, 10, 90], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, [11, 13, 14], [12, 10, 90], 7, 15)
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic

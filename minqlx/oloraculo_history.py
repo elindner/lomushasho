@@ -35,14 +35,14 @@ def update_history_file(stat, data, player_ids):
   history_file.write('\n'.join(lines) + '\n')
 
 
-stats = json.loads(
-    open(OLORACULO_STATS_FILE).read())[GAME_TYPE]
+stats = json.loads(open(OLORACULO_STATS_FILE).read())[GAME_TYPE]
 
 player_ids = sorted([id for id in PLAYERS_BY_ID.keys() if id in stats])
 
 names = [PLAYERS_BY_ID[id] for id in player_ids]
 ratings = [
-    trueskill.Rating(stats[id][0], stats[id][1]).exposure for id in player_ids]
+    trueskill.Rating(stats[id][0], stats[id][1]).exposure for id in player_ids
+]
 winloss = [stats[id][2] / float(stats[id][3]) for id in player_ids]
 killdeath = [stats[id][4] / float(stats[id][5]) for id in player_ids]
 
