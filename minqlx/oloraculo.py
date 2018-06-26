@@ -51,8 +51,8 @@ class Db(object):
 
   def __eq__(self, other):
     return (self._ratings_dict == other._ratings_dict) and (
-      self._winloss_dict == other._winloss_dict) and (
-      self._killdeath_dict == other._killdeath_dict)
+        self._winloss_dict == other._winloss_dict) and (
+        self._killdeath_dict == other._killdeath_dict)
 
   def _ratings(self, game_type):
     return self._ratings_dict.setdefault(game_type, {})
@@ -74,7 +74,7 @@ class Db(object):
 
   def get_rating(self, game_type, player_id):
     return self._ratings(game_type).setdefault(
-      int(player_id), trueskill.Rating())
+        int(player_id), trueskill.Rating())
 
   def get_winloss(self, game_type, player_id):
     return self._winloss(game_type).setdefault(int(player_id), [0, 0])
@@ -85,8 +85,8 @@ class Db(object):
   def get_player_ids(self, game_type):
     # using both dicts is probably unnecessary
     return set(
-      list(self._winloss(game_type).keys()) +
-      list(self._ratings(game_type).keys()))
+        list(self._winloss(game_type).keys()) +
+        list(self._ratings(game_type).keys()))
 
   def new_player(self, game_type, player_id):
     self.get_rating(game_type, player_id)
@@ -106,13 +106,13 @@ class Db(object):
       for player_id in player_ids:
         data = json_data[game_type][player_id]
         self.set_rating(
-          game_type, player_id, trueskill.Rating(data[0], data[1]))
+            game_type, player_id, trueskill.Rating(data[0], data[1]))
         self.set_winloss(game_type, player_id, [data[2], data[3]])
         self.set_killdeath(game_type, player_id, [data[4], data[5]])
 
   def save(self, file_name):
     game_types = set(
-      list(self._ratings_dict.keys()) + list(self._winloss_dict.keys()))
+        list(self._ratings_dict.keys()) + list(self._winloss_dict.keys()))
     player_ids = set()
     for game_type in game_types:
       player_ids.update(self._ratings(game_type).keys())
@@ -126,9 +126,9 @@ class Db(object):
         winloss = self.get_winloss(game_type, player_id)
         killdeath = self.get_killdeath(game_type, player_id)
         data[str(player_id)] = [
-          rating.mu, rating.sigma,
-          winloss[0], winloss[1],
-          killdeath[0], killdeath[1]]
+            rating.mu, rating.sigma,
+            winloss[0], winloss[1],
+            killdeath[0], killdeath[1]]
 
     open(file_name, 'w+').write(json.dumps(json_data, sort_keys=True, indent=2))
 
@@ -198,9 +198,9 @@ class oloraculo(minqlx.Plugin):
         seen_matches.add(match_key)
 
         team_a_ratings = [
-          self.get_player_ratings(player_id) for player_id in team_a]
+            self.get_player_ratings(player_id) for player_id in team_a]
         team_b_ratings = [
-          self.get_player_ratings(player_id) for player_id in team_b]
+            self.get_player_ratings(player_id) for player_id in team_b]
 
         quality = trueskill.quality([team_a_ratings, team_b_ratings])
         match_qualities.append([quality, [team_a, team_b]])
@@ -219,16 +219,14 @@ class oloraculo(minqlx.Plugin):
 
     # Update win / loss
     for player in teams['red']:
-      red_ratings.append(self.stats.get_rating(
-        game_type, player.steam_id))
+      red_ratings.append(self.stats.get_rating(game_type, player.steam_id))
       if self.game.red_score > self.game.blue_score:
         self.stats.get_winloss(game_type, player.steam_id)[0] += 1
       else:
         self.stats.get_winloss(game_type, player.steam_id)[1] += 1
 
     for player in teams['blue']:
-      blue_ratings.append(self.stats.get_rating(
-        game_type, player.steam_id))
+      blue_ratings.append(self.stats.get_rating(game_type, player.steam_id))
       if self.game.red_score < self.game.blue_score:
         self.stats.get_winloss(game_type, player.steam_id)[0] += 1
       else:
@@ -237,10 +235,8 @@ class oloraculo(minqlx.Plugin):
     # Update kill / death
     for player in teams['blue'] + teams['red']:
       steam_id = player.steam_id
-      self.stats.get_killdeath(game_type, steam_id)[
-        0] += player.stats.kills
-      self.stats.get_killdeath(game_type, steam_id)[
-        1] += player.stats.deaths
+      self.stats.get_killdeath(game_type, steam_id)[0] += player.stats.kills
+      self.stats.get_killdeath(game_type, steam_id)[1] += player.stats.deaths
 
     if self.game.red_score > self.game.blue_score:
       ranks = [0, 1]
@@ -386,8 +382,7 @@ class oloraculo(minqlx.Plugin):
 
     def get_ratio_string(title, max_value, value_a, value_b):
       ratio = value_a / float(value_b) if value_b > 0 else 0.0
-      fmt = '(^2%%%dd^7/^1%%%dd^7)' % (len(str(max_value)),
-                       len(str(max_value)))
+      fmt = '(^2%%%dd^7/^1%%%dd^7)' % (len(str(max_value)), len(str(max_value)))
       str_right = fmt % (value_a, value_b)
       return '%s: ^3%5.2f^7 %11s' % (title, ratio, str_right)
 
@@ -406,16 +401,16 @@ class oloraculo(minqlx.Plugin):
       max_kd = max(max_kd, max(killdeath))
       max_wl = max(max_wl, max(winloss))
       line_data.append([
-        name, rating.exposure,
-        winloss[0], winloss[1],
-        killdeath[0], killdeath[1]])
+          name, rating.exposure,
+          winloss[0], winloss[1],
+          killdeath[0], killdeath[1]])
 
     for player_name, exposure, win, loss, kill, death in sorted(
-        line_data, key=lambda x: x[1], reverse=True):
+            line_data, key=lambda x: x[1], reverse=True):
       wl_str = get_ratio_string('wl', max_wl, win, loss)
       kd_str = get_ratio_string('kd', max_kd, kill, death)
       self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' % (
-        player_name, exposure, wl_str, kd_str))
+          player_name, exposure, wl_str, kd_str))
     self.msg(' ')
 
   def print_log(self, msg):
@@ -431,14 +426,13 @@ class oloraculo(minqlx.Plugin):
 
   def cmd_oloraculo(self, player, msg, channel):
     if not self.is_interesting_game_type():
-      self.print_log(
-        'This game type is not interesting. No predictions.')
+      self.print_log('This game type is not interesting. No predictions.')
       return
 
     game_type = self.game.type_short
     self.populate_player_id_map()
     players_present = [
-      p.steam_id for p in self.players() if p.team in ['red', 'blue']]
+        p.steam_id for p in self.players() if p.team in ['red', 'blue']]
 
     if len(players_present) < 2:
       self.print_log('Cannot predict with less than 2 players.')
@@ -446,7 +440,7 @@ class oloraculo(minqlx.Plugin):
 
     # Only take the first 4 matches.
     match_qualities = sorted(
-      self.get_match_qualities(players_present), reverse=True)[:4]
+        self.get_match_qualities(players_present), reverse=True)[:4]
 
     for match in match_qualities:
       # BluesyQuaker on blue:
