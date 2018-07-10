@@ -11,6 +11,17 @@ ANSI_COLOR_MAP = {
     '^7': '\u001b[37m',  # white
 }
 
+PRINT_ANSI = False
+
+
+def print_ansi(message):
+  if not PRINT_ANSI:
+    return
+  ansi_message = message
+  for quake_color, ansi_color in ANSI_COLOR_MAP.items():
+    ansi_message = ansi_message.replace(quake_color, ansi_color)
+  print(ansi_message + ANSI_COLOR_MAP['^7'])
+
 
 class PlayerStats(object):
 
@@ -88,12 +99,7 @@ class Plugin(object):
     return [player for team in self.players_by_team.values() for player in team]
 
   def msg(self, message):
-    """
-    ansi_message = message
-    for quake_color, ansi_color in ANSI_COLOR_MAP.items():
-      ansi_message = ansi_message.replace(quake_color, ansi_color)
-    print(ansi_message + ANSI_COLOR_MAP['^7'])
-    """
+    print_ansi(message)
     clean_message = re.sub(r'\^[\d]', '', message)
     Plugin.messages.append(clean_message)
 
@@ -117,6 +123,7 @@ class Channel(object):
   # minqlx.Plugin API here:
 
   def reply(self, message):
+    print_ansi(message)
     clean_message = re.sub(r'\^[\d]', '', message)
     Channel.message_log = '%s\n%s' % (Channel.message_log, clean_message)
 
@@ -152,6 +159,10 @@ def end_game():
           'CAPTURE_LIMIT': 8,
           'ABORTED': Plugin.game.aborted,
       })
+
+
+def countdown_game():
+  run_game_hooks('game_countdown', {})
 
 
 def start_game(player_id_map,
@@ -199,7 +210,7 @@ def setup_game_data(player_id_map,
   Plugin.set_players_by_team(players_by_teams)
 
 
-def call_command(command_string):
+def call_command(command_string, player=None):
   if not command_string.startswith('!'):
     return
 
@@ -211,4 +222,4 @@ def call_command(command_string):
   commands = [c for c in Plugin.registered_commands if c[0] == command_name]
   for command in commands:
     fun = command[1]
-    fun(None, arguments, channel)
+    fun(player, arguments, channel)
