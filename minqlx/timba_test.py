@@ -23,22 +23,6 @@ CREDITS_DATA = {10: 1000, 11: 2000}
 CREDITS_JSON = json.dumps(CREDITS_DATA)
 
 
-class FakeFile(object):
-
-  def __init__(self, data):
-    self._data = data
-
-  def read(self):
-    return self._data
-
-  def write(self, data):
-    self._data = data
-
-
-def fake_open(fake):
-  return lambda file_name, mode=None: fake
-
-
 def make_bet(team, amount):
   return {'team': team, 'amount': amount}
 
@@ -52,10 +36,6 @@ class TestTimba(unittest.TestCase):
     self.assertTrue(
         [line for line in minqlx_fake.Plugin.messages if txt in line],
         '"%s" not in messages' % txt)
-
-  def assertNotInMessages(self, txt):
-    self.assertFalse(
-        [line for line in minqlx_fake.Plugin.messages if txt in line])
 
   def assertSavedJson(self, expected, mocked_open):
     file_handle = mocked_open.return_value.__enter__.return_value
@@ -126,6 +106,24 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({10: make_bet('red', 200)}, tim.get_current_bets())
     minqlx_fake.call_command('!timba red 0', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_handles_game_end(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba blue 10', PLAYER_ID_MAP[12])
+    minqlx_fake.call_command('!timba red 5000', PLAYER_ID_MAP[13])
+    minqlx_fake.call_command('!timba red 4000', new_player)
+    # blue won
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertInMessages('cthulhu :  1000 on blue')
+    self.assertInMessages('nyarlathotep :    10 on blue')
+    self.assertInMessages('shub niggurath :  -200 on red')
+    self.assertInMessages('zoth-ommog : -5000 on red')
+    self.assertInMessages('cthugha : -4000 on red')
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_handles_game_start(self):
