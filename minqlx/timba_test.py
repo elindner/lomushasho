@@ -157,7 +157,6 @@ class TestTimba(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bet_invalid_args(self):
     tim = timba.timba()
-    # id 666 isn't in data
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba bblue 1000', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
@@ -165,6 +164,15 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({}, tim.get_current_bets())
     minqlx_fake.call_command('!timba blue one million', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bet_no_args(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    minqlx_fake.call_command('!timba', PLAYER_ID_MAP[10])
+    self.assertEqual({}, tim.get_current_bets())
+    self.assertIn('You have 1000 credits to bet.',
+                  minqlx_fake.Channel.message_log)
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets_not_enought(self):

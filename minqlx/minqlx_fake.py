@@ -15,6 +15,7 @@ PRINT_ANSI = False
 
 
 def print_ansi(message):
+  global PRINT_ANSI
   if not PRINT_ANSI:
     return
   ansi_message = message

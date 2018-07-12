@@ -82,8 +82,7 @@ class timba(minqlx.Plugin):
       for player_id, bet in self.current_bets.items():
         clean_name = self.get_clean_name(self.names_by_id[player_id])
         self.print_msg(
-            '%30s : %5d on %-4s (-> %5d)' %
-            (clean_name, bet['amount'], bet['team'], self.credits[player_id]))
+            '%30s : %5d on %-4s' % (clean_name, bet['amount'], bet['team']))
 
   # Workaround for invalid (empty?) teams() data on start, see:
   # https://github.com/MinoMino/minqlx-plugins/blob/96ef6f4ff630128a6c404ef3f3ca20a60c9bca6c/ban.py#L940
@@ -114,12 +113,17 @@ class timba(minqlx.Plugin):
   def cmd_timba(self, player, msg, channel):
     player_id = player.steam_id
     self.names_by_id[player_id] = self.get_clean_name(player.clean_name)
+    current_credits = self.credits.setdefault(player_id, STARTING_CREDITS)
 
     if not self.betting_open:
-      self.print_log('^1You can only bet during warmup.', channel)
+      self.print_error('You can only bet during warmup.', channel)
       return
 
     valid_teams = ['red', 'blue']
+
+    if len(msg) == 1:
+      self.print_log('You have %d credits to bet.' % current_credits, channel)
+      return
 
     if len(msg) < 3 or msg[1] not in valid_teams or not msg[2].isdigit():
       self.print_log('To bet: !timba (red|blue) <amount>', channel)
@@ -127,7 +131,6 @@ class timba(minqlx.Plugin):
 
     team = msg[1]
     amount = int(msg[2])
-    current_credits = self.credits.setdefault(player_id, STARTING_CREDITS)
 
     if current_credits < amount:
       self.print_log('^1You only have %d credits to bet.' % current_credits,
