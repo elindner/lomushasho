@@ -172,10 +172,9 @@ class TestMapuche(unittest.TestCase):
   def test_print_aliases(self):
     mapu = mapuche.mapuche()
     minqlx_fake.call_command('!mapuche_aliases')
-
-    clean_log = minqlx_fake.Channel.message_log.replace(' ', '')
+    clean_log = [l.replace(' ', '') for l in minqlx_fake.Plugin.messages]
     for alias, data in MULTI_ALIAS_DATA.items():
-      self.assertIn('\n%s:%s(%s)\n' % (alias, data['mapname'], data['factory']),
+      self.assertIn('%s:%s(%s)' % (alias, data['mapname'], data['factory']),
                     clean_log)
 
 

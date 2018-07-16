@@ -93,18 +93,22 @@ class TestTimba(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_handles_game_countdown(self):
     tim = timba.timba()
+    player = PLAYER_ID_MAP[10]
+    player.clear_messages()
     self.assertEqual({}, tim.get_current_bets())
     # cannot bet until countdown
-    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba blue 1000', player)
     self.assertEqual({}, tim.get_current_bets())
-    self.assertIn('You can only bet during warmup.',
-                  minqlx_fake.Channel.message_log)
+    self.assertEqual(
+        ['You can only bet during warmup. You have 1000 credits to bet.'],
+        player.messages)
+
     minqlx_fake.countdown_game()
-    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba blue 1000', player)
     self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())
-    minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba red 200', player)
     self.assertEqual({10: make_bet('red', 200)}, tim.get_current_bets())
-    minqlx_fake.call_command('!timba red 0', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba red 0', player)
     self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
@@ -166,21 +170,23 @@ class TestTimba(unittest.TestCase):
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bet_no_args(self):
     tim = timba.timba()
+    player = PLAYER_ID_MAP[10]
+    player.clear_messages()
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
-    self.assertIn('You have 1000 credits to bet.',
-                  minqlx_fake.Channel.message_log)
+    self.assertEqual(['You have 1000 credits to bet.'], player.messages)
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets_not_enought(self):
     tim = timba.timba()
+    player = PLAYER_ID_MAP[10]
+    player.clear_messages()
     minqlx_fake.countdown_game()
     # 10 only has 1000 credits
     minqlx_fake.call_command('!timba blue 10000', PLAYER_ID_MAP[10])
-    self.assertIn('You only have 1000 credits to bet.',
-                  minqlx_fake.Channel.message_log)
     self.assertEqual({}, tim.get_current_bets())
+    self.assertEqual(['You only have 1000 credits to bet.'], player.messages)
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets(self):

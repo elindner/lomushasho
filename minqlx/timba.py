@@ -31,22 +31,16 @@ class timba(minqlx.Plugin):
     self.add_hook('game_start', self.handle_game_start)
     self.add_hook('game_end', self.handle_game_end)
 
-  def print_msg(self, msg, channel=None):
-    if channel:
-      channel.reply(msg)
-    else:
-      self.msg(msg)
+  def print_log(self, msg):
+    self.msg('%sTimba:^7 %s' % (HEADER_COLOR_STRING, msg))
 
-  def print_log(self, msg, channel=None):
-    self.print_msg('%sTimba:^7 %s' % (HEADER_COLOR_STRING, msg), channel)
-
-  def print_error(self, msg, channel=None):
-    self.print_msg('%sTimba:^1 %s' % (HEADER_COLOR_STRING, msg), channel)
+  def print_error(self, msg):
+    self.msg('%sTimba:^1 %s' % (HEADER_COLOR_STRING, msg))
 
   def print_header(self, message):
-    self.print_msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
-    self.print_msg('%sTimba v0.00001:^7 %s' % (HEADER_COLOR_STRING, message))
-    self.print_msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
+    self.msg('%sTimba v0.00001:^7 %s' % (HEADER_COLOR_STRING, message))
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
@@ -73,11 +67,11 @@ class timba(minqlx.Plugin):
         json.dumps(self.credits, sort_keys=True, indent=2))
     self.print_log('Credits saved.')
 
-  def handle_game_countdown(self, data):
+  def handle_game_countdown(self):
     self.betting_open = True
 
   def print_bets(self, winners, losers):
-    self.print_header('Bets for this game')
+    self.print_header('Bets for this game:')
     if self.current_bets:
       for player_id in winners + losers:
         # for player_id, bet in self.current_bets.items():
@@ -89,7 +83,7 @@ class timba(minqlx.Plugin):
                                                      amount, bet['team'])
         msg_string = msg_string.replace('red', '^1red^7')
         msg_string = msg_string.replace('blue', '^4blue^7')
-        self.print_msg(msg_string)
+        self.msg(msg_string)
 
   # Workaround for invalid (empty?) teams() data on start, see:
   # https://github.com/MinoMino/minqlx-plugins/blob/96ef6f4ff630128a6c404ef3f3ca20a60c9bca6c/ban.py#L940
@@ -128,33 +122,32 @@ class timba(minqlx.Plugin):
     current_credits = self.credits.setdefault(player_id, STARTING_CREDITS)
 
     if not self.betting_open:
-      self.print_error('You can only bet during warmup.', channel)
+      player.tell(
+          'You can only bet during warmup. You have ^3%d^1 credits to bet.' %
+          current_credits)
       return
 
     valid_teams = ['red', 'blue']
 
     if len(msg) == 1:
-      self.print_log('You have ^3%d^1 credits to bet.' % current_credits,
-                     channel)
+      player.tell('You have ^3%d^1 credits to bet.' % current_credits)
       return
 
     if len(msg) < 3 or msg[1] not in valid_teams or not msg[2].isdigit():
-      self.print_log(
-          'To bet: ^5!timba (red|blue) <amount>^7. ' +
-          'You have ^3%d^7 credits to bet.' % current_credits, channel)
+      player.tell('To bet: ^5!timba (red|blue) <amount>^7. ' +
+                  'You have ^3%d^7 credits to bet.' % current_credits)
       return
 
     team = msg[1]
     amount = int(msg[2])
 
     if current_credits < amount:
-      self.print_log('^1You only have ^3%d^1 credits to bet.' % current_credits,
-                     channel)
+      player.tell('^1You only have ^3%d^1 credits to bet.' % current_credits)
       return
 
     if amount == 0 and player_id in self.current_bets:
       self.current_bets.pop(player_id, None)
-      self.print_log('You removed your bet.', channel)
+      player.tell('You removed your bet.')
       return
 
     # dict: {player_id: {'team': ('red'|'blue'), 'amount': amount}, ...}
@@ -164,6 +157,6 @@ class timba(minqlx.Plugin):
     }
 
     team = '^1red^7' if team == 'red' else '^4blue^7'
-    self.print_log(
+    player.tell(
         'You bet ^3%d^7 credits on team %s. You have ^3%d^7 credits left.' %
-        (amount, team, current_credits - amount), channel)
+        (amount, team, current_credits - amount))

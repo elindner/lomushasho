@@ -34,6 +34,7 @@ class PlayerStats(object):
 class Player(object):
 
   def __init__(self, steam_id, name, team=None, kills=0, deaths=0):
+    self.messages = []
     self.steam_id = steam_id
     self.name = name
     self.clean_name = name
@@ -43,8 +44,17 @@ class Player(object):
   def __repr__(self):
     return 'Player<%d:%s(%s)>' % (self.steam_id, self.name, self.team)
 
+  def clear_messages(self):
+    self.messages = []
+
+  # minqlx.Plugin API here:
+
   def put(self, team):
     self.team = team
+
+  def tell(self, message):
+    self.messages.append(re.sub(r'\^[\d]', '', message))
+    print_ansi(message)
 
 
 class Game(object):
@@ -115,40 +125,28 @@ class Plugin(object):
     Plugin.current_factory = factory
 
 
-class Channel(object):
-  message_log = ''
-
-  def reset():
-    Channel.message_log = ''
-
-  # minqlx.Plugin API here:
-
-  def reply(self, message):
-    print_ansi(message)
-    clean_message = re.sub(r'\^[\d]', '', message)
-    Channel.message_log = '%s\n%s' % (Channel.message_log, clean_message)
-
-
 def delay(time):
   return lambda x: x
 
 
 def reset():
   Plugin.reset()
-  Channel.reset()
 
 
 def load_player(player):
   run_game_hooks('player_loaded', player)
 
 
-def run_game_hooks(event, data):
+def run_game_hooks(event, data=None):
   hooks = [h for h in Plugin.registered_hooks if h[0] == event]
   if not hooks:
     return
   for hook in hooks:
     handler = hook[1]
-    handler(data)
+    if data:
+      handler(data)
+    else:
+      handler()
 
 
 def end_game():
@@ -163,7 +161,7 @@ def end_game():
 
 
 def countdown_game():
-  run_game_hooks('game_countdown', {})
+  run_game_hooks('game_countdown')
 
 
 def start_game(player_id_map,
@@ -215,7 +213,6 @@ def call_command(command_string, player=None):
   if not command_string.startswith('!'):
     return
 
-  channel = Channel()
   parts = command_string[1:].split(' ')
   command_name = parts[0]
   arguments = [None] + parts[1:]
@@ -223,4 +220,4 @@ def call_command(command_string, player=None):
   commands = [c for c in Plugin.registered_commands if c[0] == command_name]
   for command in commands:
     fun = command[1]
-    fun(player, arguments, channel)
+    fun(player, arguments, None)

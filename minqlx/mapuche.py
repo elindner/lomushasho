@@ -31,10 +31,10 @@ class mapuche(minqlx.Plugin):
       self.print_log('Could not load aliases (%s)' % e)
       self.aliases = {}
 
-  def print_header(self, channel, message):
-    channel.reply('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
-    channel.reply('%sMapuche v1.0:^7 %s' % (HEADER_COLOR_STRING, message))
-    channel.reply('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+  def print_header(self, message):
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
+    self.msg('%sMapuche v1.0:^7 %s' % (HEADER_COLOR_STRING, message))
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
   def save_aliases(self):
     open(JSON_FILE_PATH, 'w+').write(
@@ -43,29 +43,29 @@ class mapuche(minqlx.Plugin):
   def get_aliases(self):
     return self.aliases.copy()
 
-  def print_aliases(self, channel):
-    self.print_header(channel, 'Aliases')
+  def print_aliases(self):
+    self.print_header('Aliases')
     for alias in self.aliases:
       mapname = self.aliases[alias]['mapname']
       factory = self.aliases[alias]['factory']
-      channel.reply('^5%20s^7 : ^3%s^7 (%s)' % (alias, mapname, factory))
-    channel.reply(' ')
+      self.msg('^5%20s^7 : ^3%s^7 (%s)' % (alias, mapname, factory))
+    self.msg(' ')
 
-  def print_commands(self, channel):
-    channel.reply('^5!mapuche <alias> [factory]^7: change map with alias.')
-    channel.reply('^5!mapuche_set <alias> <map> <factory>^7: set alias.')
-    channel.reply('^5!mapuche_remove <alias>^7: remove alias.')
-    channel.reply('^5!mapuche_reload^7: reoload aliases from disk cache.')
-    channel.reply('^5!mapuche_aliases^7: list aliases.')
-    channel.reply(' ')
+  def print_commands(self):
+    self.msg('^5!mapuche <alias> [factory]^7: change map with alias.')
+    self.msg('^5!mapuche_set <alias> <map> <factory>^7: set alias.')
+    self.msg('^5!mapuche_remove <alias>^7: remove alias.')
+    self.msg('^5!mapuche_reload^7: reoload aliases from disk cache.')
+    self.msg('^5!mapuche_aliases^7: list aliases.')
+    self.msg(' ')
 
-  def print_aliases_and_commands(self, channel):
-    self.print_aliases(channel)
-    self.print_commands(channel)
+  def print_aliases_and_commands(self):
+    self.print_aliases()
+    self.print_commands()
 
   def cmd_mapuche(self, player, msg, channel):
     if len(msg) < 2 or msg[1] not in self.aliases:
-      self.print_aliases_and_commands(channel)
+      self.print_aliases_and_commands()
       return
 
     alias = msg[1]
@@ -77,7 +77,7 @@ class mapuche(minqlx.Plugin):
 
   def cmd_mapuche_set(self, player, msg, channel):
     if len(msg) < 4:
-      self.print_aliases_and_commands(channel)
+      self.print_aliases_and_commands()
       return
 
     alias = msg[1]
@@ -91,11 +91,11 @@ class mapuche(minqlx.Plugin):
 
   def cmd_mapuche_remove(self, player, msg, channel):
     if len(msg) < 2:
-      self.print_aliases_and_commands(channel)
+      self.print_aliases_and_commands()
       return
 
     self.aliases.pop(msg[1], None)
     self.save_aliases()
 
   def cmd_mapuche_aliases(self, player, msg, channel):
-    self.print_aliases(channel)
+    self.print_aliases()
