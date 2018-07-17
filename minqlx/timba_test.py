@@ -104,6 +104,7 @@ class TestTimba(unittest.TestCase):
         player.messages)
 
     minqlx_fake.countdown_game()
+    self.assertInMessages('Betting is now open - place your bets!')
     minqlx_fake.call_command('!timba blue 1000', player)
     self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())
     minqlx_fake.call_command('!timba red 200', player)
@@ -139,6 +140,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
     self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertInMessages('Betting is now closed.')
     # should not be allowed
     minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[10])
     self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())

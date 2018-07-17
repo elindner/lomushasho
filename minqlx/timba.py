@@ -68,6 +68,7 @@ class timba(minqlx.Plugin):
     self.print_log('Credits saved.')
 
   def handle_game_countdown(self):
+    self.print_log('Betting is now open - place your bets!')
     self.betting_open = True
 
   def print_bets(self, winners, losers):
@@ -89,6 +90,7 @@ class timba(minqlx.Plugin):
   # https://github.com/MinoMino/minqlx-plugins/blob/96ef6f4ff630128a6c404ef3f3ca20a60c9bca6c/ban.py#L940
   @minqlx.delay(1)
   def handle_game_start(self, data):
+    self.print_log('Betting is now closed.')
     self.betting_open = False
 
   def handle_game_end(self, data):
