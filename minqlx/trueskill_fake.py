@@ -31,4 +31,6 @@ def rate(original_ratings, ranks):
 
 
 def quality(ratings):
-  return sum([r.mu for r in ratings[0]]) / sum([r.mu for r in ratings[1]])
+  sum_a = sum([r.mu for r in ratings[0]])
+  sum_b = sum([r.mu for r in ratings[1]])
+  return min(sum_a, sum_b) / max(sum_a, sum_b)

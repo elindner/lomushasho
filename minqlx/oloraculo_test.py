@@ -215,6 +215,10 @@ class TestOloraculo(unittest.TestCase):
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
   def test_oloraculo(self):
+
+    def match_key(team_a, team_b):
+      return repr(sorted((sorted(team_a), sorted(team_b))))
+
     olor = oloraculo.oloraculo()
     minqlx_fake.Plugin.set_players_by_team({
         'red': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[34]],
@@ -222,12 +226,20 @@ class TestOloraculo(unittest.TestCase):
     })
     minqlx_fake.call_command('!oloraculo')
 
-    predictions = [l for l in minqlx_fake.Plugin.messages if ' vs ' in l]
-    self.assertEqual([
-        '1.0000 : john, ringo vs paul, george',
-        '0.6667 : john, george vs paul, ringo',
-        '0.4286 : john, paul vs george, ringo'
-    ], predictions)
+    expected_predictions = [[1.0000, ['john', 'ringo'], ['paul', 'george']],
+                            [0.6667, ['john', 'george'], ['paul', 'ringo']],
+                            [0.4286, ['john', 'paul'], ['george', 'ringo']]]
+
+    actual_predictions = [l for l in minqlx_fake.Plugin.messages if ' vs ' in l]
+    self.assertEqual(len(expected_predictions), len(actual_predictions))
+
+    for index, expected in enumerate(expected_predictions):
+      actual = actual_predictions[index]
+      parts = actual.replace(' vs ', ':').replace(' ', '').split(':')
+      self.assertEqual(expected[0], float(parts[0]))
+      self.assertEqual(
+          match_key(expected[1], expected[2]),
+          match_key(parts[1].split(','), parts[2].split(',')))
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
   def test_oloraculo_move_players(self):
