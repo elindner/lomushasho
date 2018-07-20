@@ -125,7 +125,7 @@ class timba(minqlx.Plugin):
 
     if not self.betting_open:
       player.tell(
-          'You can only bet during warmup. You have ^3%d^1 credits to bet.' %
+          'You can only bet during warmup. You have ^3%d^7 credits to bet.' %
           current_credits)
       return
 
@@ -144,7 +144,7 @@ class timba(minqlx.Plugin):
     amount = int(msg[2])
 
     if current_credits < amount:
-      player.tell('^1You only have ^3%d^1 credits to bet.' % current_credits)
+      player.tell('^1You only have ^3%d^7 credits to bet.' % current_credits)
       return
 
     if amount == 0 and player_id in self.current_bets:
