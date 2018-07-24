@@ -180,8 +180,11 @@ class oloraculo(minqlx.Plugin):
     seen_matches = set()
     match_qualities = []
 
-    toro = 76561198282206581
-    mandiok = 76561198257902041
+    # TODO(edgard): Instead of hardcoding IDs, we should support setting
+    # a cvar (e.g. "seta qlx_oloraculoDontMix 1234:5678,1234:9987"). This
+    # can be done in the client and doesn't require restarting.
+    # toro = 76561198282206581
+    # mandiok = 76561198257902041
 
     for team_a in teams:
       for team_b in teams:
@@ -190,9 +193,9 @@ class oloraculo(minqlx.Plugin):
         if list(set(team_a) & set(team_b)) or match_key in seen_matches:
           continue
 
-        if ((toro in team_a and mandiok in team_a) or
-            (toro in team_b and mandiok in team_b)):
-          continue
+        # if ((toro in team_a and mandiok in team_a) or
+        #     (toro in team_b and mandiok in team_b)):
+        #   continue
 
         seen_matches.add(match_key)
 
