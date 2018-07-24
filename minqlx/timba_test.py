@@ -32,10 +32,15 @@ class TestTimba(unittest.TestCase):
   def setUp(self):
     minqlx_fake.reset()
 
+  def assertMessages(self, txt):
+    self.assertInMessages(txt)
+    self.assertEqual(1, len(minqlx_fake.Plugin.messages))
+
   def assertInMessages(self, txt):
     self.assertTrue(
         [line for line in minqlx_fake.Plugin.messages if txt in line],
-        '"%s" not in messages' % txt)
+        '"%s" not in messages. Messages: %s' % (txt,
+                                                minqlx_fake.Plugin.messages))
 
   def assertSavedJson(self, expected, mocked_open):
     file_handle = mocked_open.return_value.__enter__.return_value
@@ -70,20 +75,6 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
 
-  @patch('builtins.open', new_callable=mock_open, read_data=CREDITS_JSON)
-  def test_saves_credits(self, m):
-    tim = timba.timba()
-    self.assertEqual(CREDITS_DATA, tim.get_credits())
-
-    minqlx_fake.countdown_game()
-    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
-    # blue won
-    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-
-    expected = copy.deepcopy(CREDITS_DATA)
-    expected[10] = 2000
-    self.assertSavedJson(expected, m)
-
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_get_credits(self):
     tim = timba.timba()
@@ -113,38 +104,37 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
-  def test_handles_game_end(self):
+  def test_no_bets(self):
     tim = timba.timba()
     minqlx_fake.countdown_game()
-    new_player = minqlx_fake.Player(666, '*Cthugha*')
-    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
-    minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[11])
-    minqlx_fake.call_command('!timba blue 10', PLAYER_ID_MAP[12])
-    minqlx_fake.call_command('!timba red 5000', PLAYER_ID_MAP[13])
-    minqlx_fake.call_command('!timba red 4000', new_player)
     # blue won
+    minqlx_fake.Plugin.reset_log()
+    self.assertEqual({}, tim.get_current_bets())
     minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    self.assertInMessages('cthulhu :  1000 on blue')
-    self.assertInMessages('nyarlathotep :    10 on blue')
-    self.assertInMessages('shub niggurath :  -200 on red')
-    self.assertInMessages('zoth-ommog : -5000 on red')
-    self.assertInMessages('cthugha : -4000 on red')
+    self.assertMessages('Betting is now closed. There were no bets.')
+    self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_handles_game_start(self):
     tim = timba.timba()
     self.assertEqual({}, tim.get_current_bets())
+
     minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
+
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
-    self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())
+    minqlx_fake.call_command('!timba red 123', PLAYER_ID_MAP[11])
+    expected_bets = {10: make_bet('blue', 1000), 11: make_bet('red', 123)}
+    self.assertEqual(expected_bets, tim.get_current_bets())
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    self.assertInMessages('Betting is now closed.')
+    self.assertInMessages('Betting is now closed. The pot is 1123 credits.')
+
     # should not be allowed
     minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[10])
-    self.assertEqual({10: make_bet('blue', 1000)}, tim.get_current_bets())
+    self.assertEqual(expected_bets, tim.get_current_bets())
     minqlx_fake.end_game()
+
     # should not be allowed
     minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[10])
     self.assertEqual({}, tim.get_current_bets())
@@ -191,16 +181,176 @@ class TestTimba(unittest.TestCase):
     self.assertEqual(['You only have 1000 credits to bet.'], player.messages)
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
-  def test_bets(self):
+  def test_handles_game_end(self):
     tim = timba.timba()
     minqlx_fake.countdown_game()
     new_player = minqlx_fake.Player(666, '*Cthugha*')
     minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
     minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba blue 10', PLAYER_ID_MAP[12])
+    minqlx_fake.call_command('!timba red 5000', PLAYER_ID_MAP[13])
     minqlx_fake.call_command('!timba red 4000', new_player)
     # blue won
     minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    self.assertEqual({10: 2000, 11: 1800, 666: 1000}, tim.get_credits())
+    self.assertInMessages('cthulhu :  1000 on blue')
+    self.assertInMessages('nyarlathotep :    10 on blue')
+    self.assertInMessages('shub niggurath :  -200 on red')
+    self.assertInMessages('zoth-ommog : -5000 on red')
+    self.assertInMessages('cthugha : -4000 on red')
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bets_all_winner(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba 4000 red', new_player)
+    # red won
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 17, 15)
+    self.assertEqual({10: 1000, 11: 2000, 666: 5000}, tim.get_credits())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bets_all_loser(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba 4000 red', new_player)
+    # blue won
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertEqual({10: 0, 11: 1800, 666: 1000}, tim.get_credits())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bets_one_winner(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba 4000 red', new_player)
+    # blue won. pot is 5200
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertEqual({10: 5200, 11: 1800, 666: 1000}, tim.get_credits())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bets_multiple_winners(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba blue 100', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba b 25', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba 875 red', new_player)
+
+    # blue won. pot is 1000. 10 and 11 won.
+    # original credits:
+    #   10: 1000
+    #   11: 2000
+    # winning percentages:
+    #   10: 100 / (100 + 25) == 0.8
+    #   11: 25 / (100 + 25) == 0.2
+    # wins:
+    #   10: 1000 * 0.8 == round(800) == 800
+    #   12: 1000 * 0.2 == round(200) == 200
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertEqual(
+        {
+            10: 1700,  # original - bet + win == (1000 - 100 + 800)
+            11: 2175,  # original - bet + win == (2000 - 25 + 200)
+            666: 4125  # original - bet + win == (5000 - 875 + 0)
+        },
+        tim.get_credits())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_bets_multiple_winners_rounding(self):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba b 10', PLAYER_ID_MAP[12])
+    minqlx_fake.call_command('!timba 4000 red', new_player)
+
+    # blue won. pot is 5210. 10 and 12 won.
+    # original credits:
+    #   10: 1000
+    #   12: 5000 (empty)
+    # winning percentages:
+    #   10: 1000 / (1000 + 10) == 0.99..
+    #   12: 10 / (1000 + 10) == 0.0099..
+    # wins:
+    #   10: 5210 * 0.99.. == round(5158.415841584158) == 5158
+    #   12: 5210 * 0.0099.. == round(51.584158415841586) == 52
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertEqual(
+        {
+            10: 5158,  # original - bet + win == (1000 - 1000 + 5158)
+            11: 1800,  # original - bet + win == (2000 - 200 + 0)
+            12: 5042,  # original - bet + win == (5000 - 10 + 52)
+            666: 1000  # original - bet + win == (5000 - 4000 + 0)
+        },
+        tim.get_credits())
+
+  @patch('builtins.open', new_callable=mock_open, read_data=CREDITS_JSON)
+  def test_saves_credits_one_winner(self, m):
+    tim = timba.timba()
+    self.assertEqual(CREDITS_DATA, tim.get_credits())
+
+    minqlx_fake.countdown_game()
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    # blue won
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+
+    expected = copy.deepcopy(CREDITS_DATA)
+    self.assertSavedJson(expected, m)
+
+  @patch('builtins.open', new_callable=mock_open, read_data=CREDITS_JSON)
+  def test_saves_credits_no_winner(self, m):
+    tim = timba.timba()
+    self.assertEqual(CREDITS_DATA, tim.get_credits())
+
+    minqlx_fake.countdown_game()
+    minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
+    # blue won
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+
+    expected = copy.deepcopy(CREDITS_DATA)
+    expected[10] = 0
+    self.assertSavedJson(expected, m)
+
+  @patch('builtins.open', new_callable=mock_open, read_data=CREDITS_JSON)
+  def test_saves_credits_multiple_winners(self, m):
+    tim = timba.timba()
+    minqlx_fake.countdown_game()
+    new_player = minqlx_fake.Player(666, '*Cthugha*')
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
+    minqlx_fake.call_command('!timba b 10', PLAYER_ID_MAP[12])
+    minqlx_fake.call_command('!timba 4000 red', new_player)
+
+    # blue won. pot is 5210. 10 and 12 won.
+    # original credits:
+    #   10: 1000
+    #   12: 5000 (empty)
+    # winning percentages:
+    #   10: 1000 / (1000 + 10) == 0.99..
+    #   12: 10 / (1000 + 10) == 0.0099..
+    # wins:
+    #   10: 5210 * 0.99.. == round(5158.415841584158) == 5158
+    #   12: 5210 * 0.0099.. == round(51.584158415841586) == 52
+    minqlx_fake.run_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    self.assertEqual(
+        {
+            10: 5158,  # original - bet + win == (1000 - 1000 + 5158)
+            11: 1800,  # original - bet + win == (2000 - 200 + 0)
+            12: 5042,  # original - bet + win == (5000 - 10 + 52)
+            666: 1000  # original - bet + win == (5000 - 4000 + 0)
+        },
+        tim.get_credits())
+
+    expected = {'10': 5158, '11': 1800, '12': 5042, '666': 1000}
+    self.assertSavedJson(expected, m)
 
 
 if __name__ == '__main__':

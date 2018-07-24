@@ -4,7 +4,6 @@ import itertools
 import json
 import minqlx
 import os
-import pprint
 import re
 
 HEADER_COLOR_STRING = '^2'
