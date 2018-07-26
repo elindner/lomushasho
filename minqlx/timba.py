@@ -38,7 +38,7 @@ class timba(minqlx.Plugin):
 
   def print_header(self, message):
     self.msg('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
-    self.msg('%sTimba v0.00001:^7 %s' % (HEADER_COLOR_STRING, message))
+    self.msg('%sTimba v0.01:^7 %s' % (HEADER_COLOR_STRING, message))
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
   def is_interesting_game_type(self):
