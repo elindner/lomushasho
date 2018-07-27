@@ -13,6 +13,8 @@ ANSI_COLOR_MAP = {
 
 PRINT_ANSI = False
 
+PRI_LOWEST = 1000
+
 
 def print_ansi(message):
   global PRINT_ANSI
@@ -79,6 +81,7 @@ class Plugin(object):
   current_factory = None
   game = Game('ad')
   players_by_team = {}
+  players_list = []
 
   def reset():
     Plugin.registered_commands = []
@@ -88,6 +91,7 @@ class Plugin(object):
     Plugin.current_factory = None
     Plugin.game = Game('ad')
     Plugin.players_by_team = {}
+    Plugin.players_list = []
 
   def set_game(game):
     Plugin.game = game
@@ -99,6 +103,7 @@ class Plugin(object):
     for team in players_by_team:
       for player in players_by_team[team]:
         player.team = team
+        Plugin.players_list.append(player)
     Plugin.players_by_team = players_by_team
 
   # minqlx.Plugin API here:
@@ -108,6 +113,12 @@ class Plugin(object):
 
   def players(self):
     return [player for team in self.players_by_team.values() for player in team]
+
+  def player(self, steam_id):
+    for player in Plugin.players_list:
+      if player.steam_id == steam_id:
+        return player
+    return None
 
   def msg(self, message):
     print_ansi(message)
@@ -191,6 +202,10 @@ def run_game(player_id_map,
   start_game(player_id_map, red_team_ids, blue_team_ids, red_score, blue_score,
              aborted)
   end_game()
+
+
+def frame():
+  run_game_hooks('frame')
 
 
 def setup_game_data(player_id_map,
