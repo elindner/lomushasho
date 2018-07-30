@@ -35,13 +35,22 @@ class PlayerStats(object):
 
 class Player(object):
 
-  def __init__(self, steam_id, name, team=None, kills=0, deaths=0):
+  def __init__(self,
+               steam_id,
+               name,
+               team=None,
+               kills=0,
+               deaths=0,
+               ip=None,
+               ping=None):
     self.messages = []
     self.steam_id = steam_id
     self.name = name
     self.clean_name = name
     self.team = team
     self.stats = PlayerStats(kills, deaths)
+    self.ip = ip
+    self.ping = ping
 
   def __repr__(self):
     return 'Player<%d:%s(%s)>' % (self.steam_id, self.name, self.team)

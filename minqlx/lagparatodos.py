@@ -18,7 +18,6 @@ class lagparatodos(minqlx.Plugin):
   def cmd_lagparatodos(self, player, msg, channel):
     if len(msg) < 2 or msg[1] not in ('set', 'remove'):
       player.tell('Format: ^5!lagparatodos^7 <set|remove>')
-      player.tell(' ')
       return
 
     command = msg[1]
