@@ -23,13 +23,14 @@ class lagparatodos(minqlx.Plugin):
 
     command = msg[1]
 
-    config_file = open(JSON_FILE_PATH, 'w')
+    config_file = open(CONFIG_FILE_PATH, 'w')
     if command == 'set':
       players = self.players()
       max_ping = max([p.ping for p in players])
-      lines = ['%s:%p' % (p.ip, max_ping - p.ping) for p in players]
+      lines = ['%s:%d' % (p.ip, max_ping - p.ping) for p in players]
       config_file.writelines(lines)
-      self.print_log('Rules ^3set^7. Enjoy your lag.')
+      self.print_log(
+          'Rules ^3set^7. Max ping is %dms. Enjoy your lag.' % max_ping)
     else:
       self.print_log('Rules ^3removed^7. Back to normal.')
 
