@@ -1,5 +1,4 @@
 import json
-import minqlx_fake
 import re
 import sys
 import minqlx_fake

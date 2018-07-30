@@ -3,7 +3,6 @@ import datetime
 import json
 import minqlx_fake
 import sys
-import minqlx_fake
 import unittest
 
 from unittest.mock import mock_open
