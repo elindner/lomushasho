@@ -1,3 +1,4 @@
+import os
 import re
 
 ANSI_COLOR_MAP = {
@@ -11,7 +12,8 @@ ANSI_COLOR_MAP = {
     '^7': '\u001b[37m',  # white
 }
 
-PRINT_ANSI = False
+PRINT_ANSI = ('CONSOLE_OUTPUT' in os.environ and
+              os.environ['CONSOLE_OUTPUT'].lower() == 'true')
 
 PRI_LOWEST = 1000
 

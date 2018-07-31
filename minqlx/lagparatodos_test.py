@@ -54,21 +54,8 @@ class TestLagParaTodos(unittest.TestCase):
     player = PLAYER_ID_MAP[10]
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos', player)
-    self.assertEqual(['Format: !lagparatodos <set|remove>'], player.messages)
-
-  @patch('builtins.open', new_callable=mock_open)
-  def test_lagparatodos_set(self, m):
-    lpt = lagparatodos.lagparatodos()
-    player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    minqlx_fake.call_command('!lagparatodos set', player)
-    # self.assertMessages(
-    #     'LagParaTodos: Rules set. Max ping is 1000ms. Enjoy your lag.')
-    self.assertSavedConfig(['1.2.3.7:1000', '1.2.3.5:990', '1.2.3.4:334'], m)
-    self.assertInMessages('          zoth-ommog: 1000ms added')
-    self.assertInMessages('      shub niggurath:  990ms added')
-    self.assertInMessages('             cthulhu:  334ms added')
-    self.assertInMessages('Rules set. Enjoy your lag! >:[')
+    self.assertEqual(['Format: !lagparatodos <set|remove> [whitelist]'],
+                     player.messages)
 
   @patch('builtins.open', new_callable=mock_open)
   def test_lagparatodos_reset(self, m):
@@ -78,6 +65,43 @@ class TestLagParaTodos(unittest.TestCase):
     minqlx_fake.call_command('!lagparatodos remove', player)
     self.assertMessages('LagParaTodos: Rules removed. Back to normal.')
     self.assertSavedConfig(None, m)
+
+  @patch('builtins.open', new_callable=mock_open)
+  def test_lagparatodos_set(self, m):
+    lpt = lagparatodos.lagparatodos()
+    player = PLAYER_ID_MAP[10]
+    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.call_command('!lagparatodos set', player)
+    self.assertInMessages('          zoth-ommog: 1000ms added')
+    self.assertInMessages('      shub niggurath:  990ms added')
+    self.assertInMessages('             cthulhu:  334ms added')
+    self.assertInMessages('Rules set. Enjoy your lag! >:[')
+    self.assertSavedConfig(['1.2.3.7:1000', '1.2.3.5:990', '1.2.3.4:334'], m)
+
+  @patch('builtins.open', new_callable=mock_open)
+  def test_lagparatodos_set_only_one_player(self, m):
+    lpt = lagparatodos.lagparatodos()
+    player = PLAYER_ID_MAP[10]
+    minqlx_fake.start_game({10: PLAYER_ID_MAP[10]}, [10], [], 7, 15)
+    minqlx_fake.call_command('!lagparatodos set', player)
+    self.assertMessages('There should be at least two players. Nothing changed')
+
+  @patch('builtins.open', new_callable=mock_open)
+  def test_lagparatodos_set_whitelist(self, m):
+    lpt = lagparatodos.lagparatodos()
+    player = PLAYER_ID_MAP[10]
+    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.call_command('!lagparatodos set 1.2.3.5', player)
+    self.assertInMessages('          zoth-ommog: 1000ms added')
+    self.assertInMessages('             cthulhu:  334ms added')
+    self.assertInMessages('Rules set. Enjoy your lag! >:[')
+    self.assertSavedConfig(['1.2.3.7:1000', '1.2.3.4:334'], m)
+
+    m.reset_mock()
+    minqlx_fake.call_command('!lagparatodos set 1.2.3.6,1.2.3.7', player)
+    self.assertInMessages('      shub niggurath:  656ms added')
+    self.assertInMessages('Rules set. Enjoy your lag! >:[')
+    self.assertSavedConfig(['1.2.3.5:656'], m)
 
 
 if __name__ == '__main__':
