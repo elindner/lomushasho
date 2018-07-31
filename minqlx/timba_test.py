@@ -26,6 +26,35 @@ def make_bet(team, amount):
   return {'team': team, 'amount': amount}
 
 
+class FakeTimer(object):
+
+  def __init__(self, delay, function, arguments=None):
+    self.delay = delay
+    self.function = function
+    self.remaining_secs = delay
+    self.alive = False
+
+  def start(self):
+    self.alive = True
+    pass
+
+  def cancel(self):
+    self.alive = False
+    pass
+
+  def is_alive(self):
+    return self.alive
+
+  def tick(self, secs):
+    self.remaining_secs -= secs
+    if self.remaining_secs < 0:
+      self.fire()
+
+  def fire(self):
+    self.alive = False
+    self.function()
+
+
 class TestTimba(unittest.TestCase):
   fake_time = 1000
 
@@ -33,6 +62,8 @@ class TestTimba(unittest.TestCase):
     TestTimba.fake_time = 1000
     self.time_patcher = patch('time.time', lambda: TestTimba.fake_time)
     self.time_patcher.start()
+    self.timer_patcher = patch('threading.Timer', FakeTimer)
+    self.timer_patcher.start()
     minqlx_fake.reset()
 
   def tearDown(self):
@@ -59,12 +90,10 @@ class TestTimba(unittest.TestCase):
   def team(self, ids):
     return [PLAYER_ID_MAP[id] for id in ids]
 
-  def run_game(player_id_map, red_team_ids, blue_team_ids, red_score,
-               blue_score):
+  def run_game(self, tim, red_team_ids, blue_team_ids, red_score, blue_score):
     minqlx_fake.start_game(PLAYER_ID_MAP, red_team_ids, blue_team_ids,
                            red_score, blue_score)
-    TestTimba.fake_time += 1000
-    minqlx_fake.frame()
+    tim.get_betting_timer().fire()
     minqlx_fake.end_game()
 
   @patch('builtins.open', mock_open(read_data=json.dumps({})))
@@ -73,7 +102,7 @@ class TestTimba(unittest.TestCase):
     self.assertEqual(['timba'],
                      [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
-    self.assertEqual(['frame', 'game_countdown', 'game_end'],
+    self.assertEqual(['game_countdown', 'game_end'],
                      [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
@@ -135,7 +164,6 @@ class TestTimba(unittest.TestCase):
                      player.messages.pop())
     # 10 secs passed, we can still bet
     TestTimba.fake_time += 10
-    minqlx_fake.frame()
     minqlx_fake.call_command('!timba red 1000', player)
     self.assertEqual({10: make_bet('red', 1000)}, tim.get_current_bets())
     self.assertEqual(('You bet 1000 credits on team red. ' +
@@ -143,7 +171,6 @@ class TestTimba(unittest.TestCase):
                      player.messages.pop())
     # 29 secs passed, can still bet
     TestTimba.fake_time += 19
-    minqlx_fake.frame()
     minqlx_fake.call_command('!timba red 100', player)
     self.assertEqual({10: make_bet('red', 100)}, tim.get_current_bets())
     self.assertEqual(('You bet 100 credits on team red. ' +
@@ -151,7 +178,7 @@ class TestTimba(unittest.TestCase):
                      player.messages.pop())
     # 30 secs passed, bets closed
     TestTimba.fake_time += 1
-    minqlx_fake.frame()
+    tim.get_betting_timer().fire()
     self.assertInMessages('Betting is now closed. The pot is 100 credits.')
     self.assertEqual(('You bet 100 credits on team red. ' +
                       'You have 900 credits left. Good luck!'),
@@ -169,8 +196,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.Plugin.reset_log()
     self.assertEqual({}, tim.get_current_bets())
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    TestTimba.fake_time += 1000
-    minqlx_fake.frame()
+    tim.get_betting_timer().fire()
     self.assertMessages('Betting is now closed. There were no bets.')
     self.assertEqual({}, tim.get_current_bets())
 
@@ -188,8 +214,7 @@ class TestTimba(unittest.TestCase):
     expected_bets = {10: make_bet('blue', 1000), 11: make_bet('red', 123)}
     self.assertEqual(expected_bets, tim.get_current_bets())
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
-    TestTimba.fake_time += 1000
-    minqlx_fake.frame()
+    tim.get_betting_timer().fire()
     self.assertInMessages('Betting is now closed. The pot is 1123 credits.')
 
     # should not be allowed
@@ -254,7 +279,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.call_command('!timba red 5000', PLAYER_ID_MAP[13])
     minqlx_fake.call_command('!timba red 4000', new_player)
     # blue won
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
     self.assertInMessages('cthulhu :  1000 on blue')
     self.assertInMessages('nyarlathotep :    10 on blue')
     self.assertInMessages('shub niggurath :  -200 on red')
@@ -268,7 +293,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
     minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
     # red won
-    self.run_game([10, 11], [12, 13], 17, 15)
+    self.run_game(tim, [10, 11], [12, 13], 17, 15)
     self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
     self.assertInMessages(
         'When everyone wins, no one wins: everyone bet on the winner.')
@@ -280,7 +305,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
     minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
     # blue won
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
     self.assertEqual({10: 0, 11: 1800}, tim.get_credits())
     self.assertInMessages('Everyone bet on the loser.')
 
@@ -294,7 +319,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.call_command('!timba r 200', PLAYER_ID_MAP[11])
     minqlx_fake.call_command('!timba 4000 red', new_player)
     # blue won. pot is 5200
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
     self.assertEqual({10: 5200, 11: 1800, 666: 1000}, tim.get_credits())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
@@ -315,7 +340,7 @@ class TestTimba(unittest.TestCase):
     # wins:
     #   10: 1000 * 0.8 == round(800) == 800
     #   12: 1000 * 0.2 == round(200) == 200
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
     self.assertEqual(
         {
             10: 1700,  # original - bet + win == (1000 - 100 + 800)
@@ -343,7 +368,7 @@ class TestTimba(unittest.TestCase):
     # wins:
     #   10: 5210 * 0.99.. == round(5158.415841584158) == 5158
     #   12: 5210 * 0.0099.. == round(51.584158415841586) == 52
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
     self.assertEqual(
         {
             10: 5158,  # original - bet + win == (1000 - 1000 + 5158)
@@ -361,7 +386,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
     # blue won
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
 
     expected = copy.deepcopy(CREDITS_DATA)
     self.assertSavedJson(expected, m)
@@ -374,7 +399,7 @@ class TestTimba(unittest.TestCase):
     minqlx_fake.countdown_game()
     minqlx_fake.call_command('!timba red 1000', PLAYER_ID_MAP[10])
     # blue won
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
 
     expected = copy.deepcopy(CREDITS_DATA)
     expected[10] = 0
@@ -399,7 +424,8 @@ class TestTimba(unittest.TestCase):
     # wins:
     #   10: 5210 * 0.99.. == round(5158.415841584158) == 5158
     #   12: 5210 * 0.0099.. == round(51.584158415841586) == 52
-    self.run_game([10, 11], [12, 13], 7, 15)
+    self.run_game(tim, [10, 11], [12, 13], 7, 15)
+
     self.assertEqual(
         {
             10: 5158,  # original - bet + win == (1000 - 1000 + 5158)

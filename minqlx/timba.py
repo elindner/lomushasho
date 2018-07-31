@@ -4,6 +4,7 @@ import json
 import minqlx
 import os
 import re
+import threading
 import time
 
 HEADER_COLOR_STRING = '^2'
@@ -18,7 +19,7 @@ BETTING_WINDOW_SECS = 30
 class timba(minqlx.Plugin):
 
   def __init__(self):
-    self.betting_window_open = False
+    self.betting_timer = None
     self.betting_window_end_time = 0
     # dict: {player_id: {'team': ('red'|'blue'), 'amount': amount}, ...}
     self.current_bets = {}
@@ -29,7 +30,6 @@ class timba(minqlx.Plugin):
     self.load_credits()
 
     self.add_command('timba', self.cmd_timba, 3)
-    self.add_hook("frame", self.handle_frame, priority=minqlx.PRI_LOWEST)
     self.add_hook('game_countdown', self.handle_game_countdown)
     self.add_hook('game_end', self.handle_game_end)
 
@@ -47,9 +47,8 @@ class timba(minqlx.Plugin):
   def is_interesting_game_type(self):
     return self.game.type_short in INTERESTING_GAME_TYPES
 
-  def is_betting_allowed(self):
-    now_secs = int(time.time())
-    return self.betting_window_open and now_secs < self.betting_window_end_time
+  def is_betting_window_open(self):
+    return self.betting_timer and self.betting_timer.is_alive()
 
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
@@ -59,6 +58,9 @@ class timba(minqlx.Plugin):
 
   def get_credits(self):
     return self.credits
+
+  def get_betting_timer(self):
+    return self.betting_timer
 
   def load_credits(self):
     try:
@@ -94,15 +96,7 @@ class timba(minqlx.Plugin):
   def get_pot(self):
     return sum([bet['amount'] for bet in self.current_bets.values()])
 
-  def handle_frame(self):
-    if not self.betting_window_open:
-      return
-
-    now_secs = int(time.time())
-    if now_secs < self.betting_window_end_time:
-      return
-
-    self.betting_window_open = False
+  def close_betting_window(self):
     pot = self.get_pot()
     pot_msg = ('The pot is ^3%d^7 credits.' % pot) if pot > 0 else (
         'There were no bets.')
@@ -117,23 +111,40 @@ class timba(minqlx.Plugin):
              + 'Good luck!') % (bet['amount'], bet['team'],
                                 self.credits[player_id]))
 
+  def betting_window_reminder(self, seconds):
+    self.print_log('You have %d seconds to place your bets!' % seconds)
+
   def handle_game_countdown(self):
     if not self.is_interesting_game_type():
       return
 
-    self.betting_window_end_time = int(time.time()) + BETTING_WINDOW_SECS
-    self.betting_window_open = True
+    if self.is_betting_window_open():
+      # Why would this happen?
+      self.print_error('Countdown started while betting is open. Why?')
+      self.betting_timer.cancel()
 
+    self.betting_window_end_time = int(time.time()) + BETTING_WINDOW_SECS
+    self.betting_timer = threading.Timer(BETTING_WINDOW_SECS,
+                                         self.close_betting_window)
+
+    # Setup a couple of reminders
+    threading.Timer(BETTING_WINDOW_SECS - 10, self.betting_window_reminder,
+                    [10]).start()
+    threading.Timer(BETTING_WINDOW_SECS - 5, self.betting_window_reminder,
+                    [5]).start()
+
+    self.betting_timer.start()
     self.print_log(
         'Betting is now open: you have %d seconds to place your bets!' %
         BETTING_WINDOW_SECS)
 
   def handle_game_end(self, data):
-    if self.betting_window_open:
+    if self.is_betting_window_open():
       self.print_error('The betting window never closed!')
       return
 
-    self.betting_window_open = False
+    # Should not be necessary, but anyways:
+    self.betting_timer.cancel()
 
     if data['ABORTED']:
       for player_id, bet in self.current_bets.items():
@@ -233,7 +244,7 @@ class timba(minqlx.Plugin):
     self.names_by_id[player_id] = self.get_clean_name(player.clean_name)
     current_credits = self.credits.setdefault(player_id, STARTING_CREDITS)
 
-    if not self.is_betting_allowed():
+    if not self.is_betting_window_open():
       player.tell('Betting is not allowed now. You have ^3%d^7 credits to bet.'
                   % current_credits)
       return
