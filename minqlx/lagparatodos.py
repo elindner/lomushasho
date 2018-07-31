@@ -25,9 +25,6 @@ class lagparatodos(minqlx.Plugin):
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
 
-  def parse_whitelist(self, whitelist_str):
-    return whitelist_str.split(',')
-
   def cmd_lagparatodos(self, player, msg, channel):
     if len(msg) < 2 or msg[1] not in ('set', 'remove'):
       player.tell('Format: ^5!lagparatodos^7 <set|remove> [whitelist]')
