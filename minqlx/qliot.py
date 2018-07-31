@@ -45,7 +45,6 @@ class qliot(minqlx.Plugin):
     if (player.steam_id == 76561198282206581):
       self.running = False
 
-  @minqlx.delay(2)
   def handle_player_loaded(self, player):
     if (player.steam_id == 76561198282206581):
       self.running = True
