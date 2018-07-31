@@ -62,10 +62,13 @@ class TestLagParaTodos(unittest.TestCase):
     player = PLAYER_ID_MAP[10]
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos set', player)
-    self.assertMessages(
-        'LagParaTodos: Rules set. Max ping is 1000ms. Enjoy your lag.')
-    self.assertSavedConfig(
-        ['1.2.3.4:334', '1.2.3.5:990', '1.2.3.6:0', '1.2.3.7:1000'], m)
+    # self.assertMessages(
+    #     'LagParaTodos: Rules set. Max ping is 1000ms. Enjoy your lag.')
+    self.assertSavedConfig(['1.2.3.7:1000', '1.2.3.5:990', '1.2.3.4:334'], m)
+    self.assertInMessages('          zoth-ommog: 1000ms added')
+    self.assertInMessages('      shub niggurath:  990ms added')
+    self.assertInMessages('             cthulhu:  334ms added')
+    self.assertInMessages('Rules set. Enjoy your lag! >:[')
 
   @patch('builtins.open', new_callable=mock_open)
   def test_lagparatodos_reset(self, m):

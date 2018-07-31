@@ -136,8 +136,10 @@ class timba(minqlx.Plugin):
     self.betting_window_open = False
 
     if data['ABORTED']:
-      self.current_bets = {}
+      for player_id, bet in self.current_bets.items():
+        self.credits[player_id] += bet['amount']
       self.print_log('No one wins: game was aborted.')
+      self.current_bets = {}
       return
 
     pot = self.get_pot()
