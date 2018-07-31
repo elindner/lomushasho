@@ -18,11 +18,6 @@ def connected(client):
 
 def disconnected(client):
   print('Disconnected from Adafruit IO!')
-  #sys.exit(1)
-
-def message(client, feed_id, payload):
-  #print('Feed {0} received new value: {1}'.format(feed_id, payload))
-  pass
 
 class qliot(minqlx.Plugin):
   def __init__(self):
@@ -31,7 +26,6 @@ class qliot(minqlx.Plugin):
     self.client = MQTTClient(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
     self.client.on_connect = connected
     self.client.on_disconnect = disconnected
-    self.client.on_message = message
     self.client.connect()
     self.client.loop_background()
 
