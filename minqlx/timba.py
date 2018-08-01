@@ -118,12 +118,13 @@ class timba(minqlx.Plugin):
     for timer in self.reminder_timers:
       timer.cancel()
 
-  def betting_reminder(self, seconds):
-    self.print_log('You have ^3%d^7 seconds to place your bets!' % seconds)
+  def betting_reminder(self):
+    self.print_log('You have ^3%d^7 seconds to place your bets!' %
+                   (self.betting_window_end_time - int(time.time())))
 
   def handle_game_start(self, data):
     if self.is_betting_window_open():
-      self.betting_reminder(self.betting_window_end_time - int(time.time()))
+      self.betting_reminder()
 
   def handle_game_countdown(self):
     if not self.is_interesting_game_type():
@@ -140,8 +141,8 @@ class timba(minqlx.Plugin):
 
     # Setup a couple of reminders
     self.reminder_timers = [
-        threading.Timer(BETTING_WINDOW_SECS - 10, self.betting_reminder, [10]),
-        threading.Timer(BETTING_WINDOW_SECS - 5, self.betting_reminder, [5]),
+        threading.Timer(BETTING_WINDOW_SECS - 10, self.betting_reminder),
+        threading.Timer(BETTING_WINDOW_SECS - 5, self.betting_reminder),
     ]
     for timer in self.reminder_timers:
       timer.start()
