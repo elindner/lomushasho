@@ -21,6 +21,7 @@ class timba(minqlx.Plugin):
   def __init__(self):
     self.betting_timer = None
     self.betting_window_end_time = 0
+    self.reminder_timers = []
     # dict: {player_id: {'team': ('red'|'blue'), 'amount': amount}, ...}
     self.current_bets = {}
     # dict: {player_id: credits, ...}
@@ -31,6 +32,7 @@ class timba(minqlx.Plugin):
 
     self.add_command('timba', self.cmd_timba, 3)
     self.add_hook('game_countdown', self.handle_game_countdown)
+    self.add_hook('game_start', self.handle_game_start)
     self.add_hook('game_end', self.handle_game_end)
 
   def print_log(self, msg):
@@ -111,8 +113,17 @@ class timba(minqlx.Plugin):
              + 'Good luck!') % (bet['amount'], bet['team'],
                                 self.credits[player_id]))
 
-  def betting_window_reminder(self, seconds):
-    self.print_log('You have %d seconds to place your bets!' % seconds)
+  def stop_timers(self):
+    self.betting_timer.cancel()
+    for timer in self.reminder_timers:
+      timer.cancel()
+
+  def betting_reminder(self, seconds):
+    self.print_log('You have ^3%d^7 seconds to place your bets!' % seconds)
+
+  def handle_game_start(self, data):
+    if self.is_betting_window_open():
+      self.betting_reminder(self.betting_window_end_time - int(time.time()))
 
   def handle_game_countdown(self):
     if not self.is_interesting_game_type():
@@ -121,36 +132,38 @@ class timba(minqlx.Plugin):
     if self.is_betting_window_open():
       # Why would this happen?
       self.print_error('Countdown started while betting is open. Why?')
-      self.betting_timer.cancel()
+      self.stop_timers()
 
     self.betting_window_end_time = int(time.time()) + BETTING_WINDOW_SECS
     self.betting_timer = threading.Timer(BETTING_WINDOW_SECS,
                                          self.close_betting_window)
 
     # Setup a couple of reminders
-    threading.Timer(BETTING_WINDOW_SECS - 10, self.betting_window_reminder,
-                    [10]).start()
-    threading.Timer(BETTING_WINDOW_SECS - 5, self.betting_window_reminder,
-                    [5]).start()
+    self.reminder_timers = [
+        threading.Timer(BETTING_WINDOW_SECS - 10, self.betting_reminder, [10]),
+        threading.Timer(BETTING_WINDOW_SECS - 5, self.betting_reminder, [5]),
+    ]
+    for timer in self.reminder_timers:
+      timer.start()
 
     self.betting_timer.start()
     self.print_log(
-        'Betting is now open: you have %d seconds to place your bets!' %
+        'Betting is now open: you have ^3%d^7 seconds to place your bets!' %
         BETTING_WINDOW_SECS)
 
   def handle_game_end(self, data):
-    if self.is_betting_window_open():
-      self.print_error('The betting window never closed!')
-      return
-
     # Should not be necessary, but anyways:
-    self.betting_timer.cancel()
+    self.stop_timers()
 
     if data['ABORTED']:
       for player_id, bet in self.current_bets.items():
         self.credits[player_id] += bet['amount']
       self.print_log('No one wins: game was aborted.')
       self.current_bets = {}
+      return
+
+    if self.is_betting_window_open():
+      self.print_error('The betting window never closed!')
       return
 
     pot = self.get_pot()

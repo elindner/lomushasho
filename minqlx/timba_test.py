@@ -102,7 +102,7 @@ class TestTimba(unittest.TestCase):
     self.assertEqual(['timba'],
                      [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
-    self.assertEqual(['game_countdown', 'game_end'],
+    self.assertEqual(['game_countdown', 'game_start', 'game_end'],
                      [hook[0] for hook in minqlx_fake.Plugin.registered_hooks])
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
@@ -197,7 +197,7 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({}, tim.get_current_bets())
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
     tim.get_betting_timer().fire()
-    self.assertMessages('Betting is now closed. There were no bets.')
+    self.assertInMessages('Betting is now closed. There were no bets.')
     self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
