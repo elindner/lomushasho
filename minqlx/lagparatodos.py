@@ -46,20 +46,31 @@ class lagparatodos(minqlx.Plugin):
 
     max_ping = max([p.ping for p in players if p.ip not in whitelist])
     entries = sorted(
-        [[self.get_clean_name(p.clean_name), p.ip, p.ping]
-         for p in players
-         if p.ip not in whitelist],
-        key=lambda x: x[2])
+        [[
+            self.get_clean_name(p.clean_name),
+            p.ip,
+            p.ping if p.ip not in whitelist else max_ping,
+        ] for p in players],
+        key=lambda x: (x[2], 1 if x[1] not in whitelist else 0))
 
     self.print_header('Generating rules. Max ping is ^1%dms^7' % max_ping)
     lines = []
     for entry in entries:
-      if entry[2] == max_ping:
-        self.msg('^5%20s^7: ------ baseline' % entry[0])
-        continue
       added_ping = max_ping - entry[2]
-      lines.append('%s:%d' % (entry[1], added_ping))
-      self.msg('^5%20s^7: ^3%4dms^7 added' % (entry[0], added_ping))
+      ip = entry[1]
+      name = entry[0]
+
+      added_message = ''
+      if ip in whitelist:
+        added_message = '------ whitelisted'
+      elif added_ping == 0:
+        added_message = '------ baseline'
+      else:
+        added_message = '^3%4dms^7 added' % added_ping
+
+      self.msg('^5%20s^7: %s' % (name, added_message))
+
+      lines.append('%s:%d\n' % (ip, added_ping))
 
     config_file = open(CONFIG_FILE_PATH, 'w')
     config_file.writelines(lines)
