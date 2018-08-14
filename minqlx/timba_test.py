@@ -285,6 +285,7 @@ class TestTimba(unittest.TestCase):
     self.assertInMessages('shub niggurath :  -200 on red')
     self.assertInMessages('zoth-ommog : -5000 on red')
     self.assertInMessages('cthugha : -4000 on red')
+    self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets_all_winner(self):
@@ -297,6 +298,7 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
     self.assertInMessages(
         'When everyone wins, no one wins: everyone bet on the winner.')
+    self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets_all_loser(self):
