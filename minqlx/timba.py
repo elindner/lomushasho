@@ -153,14 +153,19 @@ class timba(minqlx.Plugin):
         BETTING_WINDOW_SECS)
 
   def handle_game_end(self, data):
-    # Should not be necessary, but anyways:
-    self.stop_timers()
     bets = copy.deepcopy(self.current_bets)
     self.current_bets = {}
 
-    if data['ABORTED']:
+    # If the window has been closed, we already took credits
+    # from bettors, so we should return it
+    if data['ABORTED'] and not self.is_betting_window_open():
       for player_id, bet in bets.items():
         self.credits[player_id] += bet['amount']
+
+    # Should not be necessary, but anyways:
+    self.stop_timers()
+
+    if data['ABORTED']:
       self.print_log('No one wins: game was aborted.')
       return
 

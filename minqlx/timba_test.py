@@ -288,6 +288,37 @@ class TestTimba(unittest.TestCase):
     self.assertEqual({}, tim.get_current_bets())
 
   @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_handles_game_aborted_before_start(self):
+    tim = timba.timba()
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    minqlx_fake.countdown_game()
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[11])
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    # blue won
+    minqlx_fake.start_game(
+        PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15, aborted=True)
+    minqlx_fake.end_game()
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    self.assertEqual({}, tim.get_current_bets())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
+  def test_handles_game_aborted_after_start(self):
+    tim = timba.timba()
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    minqlx_fake.countdown_game()
+    minqlx_fake.call_command('!timba blue 1000', PLAYER_ID_MAP[10])
+    minqlx_fake.call_command('!timba red 200', PLAYER_ID_MAP[11])
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    # blue won
+    minqlx_fake.start_game(
+        PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15, aborted=True)
+    tim.get_betting_timer().fire()
+    minqlx_fake.end_game()
+    self.assertEqual({10: 1000, 11: 2000}, tim.get_credits())
+    self.assertEqual({}, tim.get_current_bets())
+
+  @patch('builtins.open', mock_open(read_data=CREDITS_JSON))
   def test_bets_all_winner(self):
     tim = timba.timba()
     minqlx_fake.countdown_game()
