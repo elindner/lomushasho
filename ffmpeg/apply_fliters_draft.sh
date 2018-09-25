@@ -1,27 +1,42 @@
 #!/bin/bash
 
-if [[ ${#} -lt 2 ]];
+if [[ ${#} -lt 3 ]];
 then
   echo "${0} <input_file> <output_file> <start_time>"
   exit 1
 fi
 
 TITLE="This is a test"
+SUBTITLE="20-9-2018"
 
 FFMPEG="/usr/bin/ffmpeg"
 FFPROBE="/usr/bin/ffprobe"
 INPUT=${1}
 OUTPUT=${2}
+START_TIME=${3}
 
-VIDEO_DURATION=$(
-  ${FFPROBE} \
-    -v error \
-    -of default=noprint_wrappers=1:nokey=1 \
-    -select_streams v:0 \
-    -show_entries stream=duration ${INPUT})
+get_video_duration() {
+  echo $(
+    ${FFPROBE} \
+      -v error \
+      -of default=noprint_wrappers=1:nokey=1 \
+      -select_streams v:0 \
+      -show_entries stream=duration ${1})
+}
 
+echo "Trimming original video..."
+TRIMMED_FILE=$(mktemp /tmp/XXXXXXXXX.mp4)
+
+${FFMPEG} \
+  -y \
+  -i ${INPUT} \
+  -ss ${START_TIME} \
+  ${TRIMMED_FILE}
+
+VIDEO_DURATION=$(get_video_duration ${TRIMMED_FILE})
 FADE_OUT_START=$(bc <<< ${VIDEO_DURATION}-1)
 
+echo "Applying filters..."
 FILTER="\
   [0:v] \
     format= \
@@ -65,7 +80,14 @@ FILTER="\
       fontsize=150:\
       fontcolor=white:\
       x=(main_w/2-text_w/2):\
-      y=(main_h/2-text_h/2),
+      y=(main_h/2-text_h/2)-80,
+    drawtext=\
+      text='${SUBTITLE}':\
+      font=Trebuchet:\
+      fontsize=100:\
+      fontcolor=white:\
+      x=(main_w/2-text_w/2):\
+      y=(main_h/2-text_h/2)+80,
     fade=\
       t=out:\
       st=1:\
@@ -76,6 +98,8 @@ FILTER="\
 
 ${FFMPEG} \
   -y \
-  -i ${INPUT} \
+  -i ${TRIMMED_FILE} \
   -filter_complex "${FILTER}" \
   -map "[final]" ${OUTPUT}
+
+rm -f ${TRIMMED_FILE}
