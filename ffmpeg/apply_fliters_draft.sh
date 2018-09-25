@@ -71,8 +71,8 @@ FILTER="\
       t=out:\
       st=${FADE_OUT_START}:\
       d=1\
-  [blur_fade_from_black];\
-  [blur_fade_from_black]split[text_base][text_fore];\
+  [fade_in_and_out];\
+  [fade_in_and_out]split[text_base][text_fore];\
   [text_fore]\
     drawtext=\
       text='${TITLE}':\
@@ -94,12 +94,22 @@ FILTER="\
       d=1:\
       alpha=1\
   [text_layer];\
-  [text_base][text_layer]overlay[final]"
+  [text_base][text_layer]overlay[final];\
+  [0:a] \
+    afade=\
+      t=in:\
+      st=0:\
+      d=1, \
+    afade=\
+      t=out:\
+      st=${FADE_OUT_START}:\
+      d=1 \
+  [final_audio]"
 
 ${FFMPEG} \
   -y \
   -i ${TRIMMED_FILE} \
   -filter_complex "${FILTER}" \
-  -map "[final]" ${OUTPUT}
+  -map "[final]" -map "[final_audio]" ${OUTPUT}
 
 rm -f ${TRIMMED_FILE}
