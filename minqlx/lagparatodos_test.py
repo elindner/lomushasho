@@ -45,13 +45,43 @@ class TestLagParaTodos(unittest.TestCase):
     self.assertEqual(['lagparatodos'],
                      [cmd[0] for cmd in minqlx_fake.Plugin.registered_commands])
 
+  def test_parse_params(self):
+    lpt = lagparatodos.lagparatodos()
+
+    def assertParams(command, whitelist, latency_limit, command_line):
+      args = [None] + command_line.split(' ')
+      actual = lpt.parse_params(args)
+      self.assertEqual(command, actual['command'])
+      self.assertEqual(whitelist, actual['whitelist'])
+      self.assertEqual(latency_limit, actual['latency_limit'])
+
+    self.assertEqual(None, lpt.parse_params(''))
+    self.assertEqual(None, lpt.parse_params('something'))
+
+    assertParams('remove', [], None, 'remove')
+    assertParams('remove', [], None, 'remove something')
+
+    assertParams('set', [], None, 'set')
+    assertParams('set', [], None, 'set something')
+    assertParams('set', [], 100, 'set 100')
+    assertParams('set', ['1.2.3.4'], None, 'set 1.2.3.4')
+    assertParams('set', ['1.2.3.4', '5.6.7.8'], None, 'set 1.2.3.4,5.6.7.8')
+    assertParams('set', ['1.2.3.4', '5.6.7.8'], None, 'set 1.2.3.4,5.6.7.8,!!')
+
+    assertParams('set', ['1.2.3.4'], 666, 'set 1.2.3.4 666')
+    assertParams('set', ['1.2.3.4'], 666, 'set 666 1.2.3.4')
+    assertParams('set', ['1.2.3.4', '5.6.7.8'], 123, 'set 123 1.2.3.4,5.6.7.8')
+    assertParams('set', ['1.2.3.4', '5.6.7.8'], 123,
+                 'set 1.2.3.4,5.6.7.8,!! 123')
+
   def test_lagparatodos_no_command(self):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
     minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos', player)
-    self.assertEqual(['Format: !lagparatodos <set|remove> [whitelist]'],
-                     player.messages)
+    self.assertEqual(
+        ['Format: !lagparatodos <set|remove> [whitelist] [latency_limit]'],
+        player.messages)
 
   @patch('builtins.open', new_callable=mock_open)
   def test_lagparatodos_reset(self, m):
@@ -72,7 +102,7 @@ class TestLagParaTodos(unittest.TestCase):
         '          zoth-ommog: 1000ms added',
         '      shub niggurath:  990ms added',
         '             cthulhu:  334ms added',
-        '        nyarlathotep: ------ baseline',
+        '        nyarlathotep: ------ over limit',
         'Rules set. Enjoy your lag! >:[',
     ])
     self.assertSavedConfig(
@@ -88,6 +118,22 @@ class TestLagParaTodos(unittest.TestCase):
         ['There should be at least two players. Nothing changed'])
 
   @patch('builtins.open', new_callable=mock_open)
+  def test_lagparatodos_set_latency_limit(self, m):
+    lpt = lagparatodos.lagparatodos()
+    player = PLAYER_ID_MAP[10]
+    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.call_command('!lagparatodos set 500', player)
+    self.assertMessages([
+        '          zoth-ommog:  500ms added',
+        '      shub niggurath:  490ms added',
+        '             cthulhu: ------ over limit',
+        '        nyarlathotep: ------ over limit',
+        'Rules set. Enjoy your lag! >:[',
+    ])
+    self.assertSavedConfig(
+        ['1.2.3.4:0', '1.2.3.5:490', '1.2.3.6:0', '1.2.3.7:500'], m)
+
+  @patch('builtins.open', new_callable=mock_open)
   def test_lagparatodos_set_whitelist(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
@@ -97,7 +143,7 @@ class TestLagParaTodos(unittest.TestCase):
         '          zoth-ommog: 1000ms added',
         '             cthulhu:  334ms added',
         '      shub niggurath: ------ whitelisted',
-        '        nyarlathotep: ------ baseline',
+        '        nyarlathotep: ------ over limit',
         'Rules set. Enjoy your lag! >:[',
     ])
     self.assertSavedConfig(
@@ -109,11 +155,39 @@ class TestLagParaTodos(unittest.TestCase):
         '      shub niggurath:  656ms added',
         '        nyarlathotep: ------ whitelisted',
         '          zoth-ommog: ------ whitelisted',
-        '             cthulhu: ------ baseline',
+        '             cthulhu: ------ over limit',
         'Rules set. Enjoy your lag! >:[',
     ])
     self.assertSavedConfig(
         ['1.2.3.4:0', '1.2.3.5:656', '1.2.3.6:0', '1.2.3.7:0'], m)
+
+  @patch('builtins.open', new_callable=mock_open)
+  def test_lagparatodos_set_whitelist_and_latency_limit(self, m):
+    lpt = lagparatodos.lagparatodos()
+    player = PLAYER_ID_MAP[10]
+    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.call_command('!lagparatodos set 1.2.3.5 500', player)
+    self.assertMessages([
+        '          zoth-ommog:  500ms added',
+        '      shub niggurath: ------ whitelisted',
+        '             cthulhu: ------ over limit',
+        '        nyarlathotep: ------ over limit',
+        'Rules set. Enjoy your lag! >:[',
+    ])
+    self.assertSavedConfig(
+        ['1.2.3.4:0', '1.2.3.5:0', '1.2.3.6:0', '1.2.3.7:500'], m)
+
+    m.reset_mock()
+    minqlx_fake.call_command('!lagparatodos set 5 1.2.3.6,1.2.3.7', player)
+    self.assertMessages([
+        '        nyarlathotep: ------ whitelisted',
+        '          zoth-ommog: ------ whitelisted',
+        '      shub niggurath: ------ over limit',
+        '             cthulhu: ------ over limit',
+        'Rules set. Enjoy your lag! >:[',
+    ])
+    self.assertSavedConfig(['1.2.3.4:0', '1.2.3.5:0', '1.2.3.6:0', '1.2.3.7:0'],
+                           m)
 
 
 if __name__ == '__main__':

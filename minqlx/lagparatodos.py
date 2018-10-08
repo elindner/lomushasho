@@ -25,13 +25,43 @@ class lagparatodos(minqlx.Plugin):
   def get_clean_name(self, name):
     return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
 
-  def cmd_lagparatodos(self, player, msg, channel):
+  def parse_params(self, msg):
+    is_ip = lambda s: len(
+        [p for p in s.split('.') if p.isdigit() and int(p) <= 255]) == 4
+
     if len(msg) < 2 or msg[1] not in ('set', 'remove'):
-      player.tell('Format: ^5!lagparatodos^7 <set|remove> [whitelist]')
+      # wasn't given a command.
+      return None
+
+    params = {
+        'command': msg[1],
+        'whitelist': [],
+        'latency_limit': None,
+    }
+
+    if params['command'] == 'remove':
+      return params
+
+    for raw_param in msg[1:]:
+      if raw_param.isdigit():
+        params['latency_limit'] = int(raw_param)
+      else:
+        ip_list = [p for p in raw_param.split(',') if is_ip(p)]
+        if ip_list:
+          params['whitelist'] = ip_list
+
+    return params
+
+  def cmd_lagparatodos(self, player, msg, channel):
+    params = self.parse_params(msg)
+    if not params:
+      player.tell(
+          'Format: ^5!lagparatodos^7 <set|remove> [whitelist] [latency_limit]')
       return
 
-    command = msg[1]
-    whitelist = msg[2].split(',') if len(msg) == 3 else []
+    command = params['command']
+    whitelist = params['whitelist']
+    latency_limit = params['latency_limit']
 
     if command == 'remove':
       open(CONFIG_FILE_PATH, 'w').close()
@@ -45,6 +75,9 @@ class lagparatodos(minqlx.Plugin):
       return
 
     max_ping = max([p.ping for p in players if p.ip not in whitelist])
+    if latency_limit:
+      max_ping = min(max_ping, latency_limit)
+
     entries = sorted(
         [[
             self.get_clean_name(p.clean_name),
@@ -56,7 +89,7 @@ class lagparatodos(minqlx.Plugin):
     self.print_header('Generating rules. Max ping is ^1%dms^7' % max_ping)
     lines = []
     for entry in entries:
-      added_ping = max_ping - entry[2]
+      added_ping = max(0, max_ping - entry[2])
       ip = entry[1]
       name = entry[0]
 
@@ -64,7 +97,7 @@ class lagparatodos(minqlx.Plugin):
       if ip in whitelist:
         added_message = '------ whitelisted'
       elif added_ping == 0:
-        added_message = '------ baseline'
+        added_message = '------ over limit'
       else:
         added_message = '^3%4dms^7 added' % added_ping
 
