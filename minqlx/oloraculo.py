@@ -32,7 +32,7 @@ HEADER_COLOR_STRING = '^2'
 JSON_FILE_NAME = 'oloraculo_stats.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
-INTERESTING_GAME_TYPES = ['ad', 'ctf']
+INTERESTING_GAME_TYPES = ['ad', 'ctf', 'ca']
 
 
 class Db(object):
