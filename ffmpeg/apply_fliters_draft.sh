@@ -9,11 +9,25 @@ fi
 TITLE="This is a test"
 SUBTITLE="20-9-2018"
 
-FFMPEG="/usr/bin/ffmpeg"
-FFPROBE="/usr/bin/ffprobe"
+FFMPEG="$(which ffmpeg)"
+FFPROBE="$(which ffprobe)"
 INPUT=${1}
 OUTPUT=${2}
 START_TIME=${3}
+
+get_platform() {
+  if [[ "$(uname)" == "Darwin" ]];
+  then
+    echo "mac"
+  else
+    if grep -sq Windows /proc/version;
+    then
+      echo "windows"
+    else
+      echo "linux"
+    fi
+  fi
+}
 
 get_video_duration() {
   echo $(
@@ -23,6 +37,13 @@ get_video_duration() {
       -select_streams v:0 \
       -show_entries stream=duration ${1})
 }
+
+get_font_path() {
+  echo $(fc-list | grep -Ei "${1}.*\.ttf" | sort | tail -1 | cut -d: -f1)
+}
+
+FONT_FILE_TITLE=$(get_font_path Impact)
+FONT_FILE_SUBTITLE=$(get_font_path Trebuchet)
 
 echo "Trimming original video..."
 TRIMMED_FILE=$(mktemp /tmp/XXXXXXXXX.mp4)
@@ -76,14 +97,14 @@ FILTER="\
   [text_fore]\
     drawtext=\
       text='${TITLE}':\
-      font=Impact:\
+      fontfile=${FONT_FILE_TITLE}:\
       fontsize=150:\
       fontcolor=white:\
       x=(main_w/2-text_w/2):\
       y=(main_h/2-text_h/2)-80,
     drawtext=\
       text='${SUBTITLE}':\
-      font=Trebuchet:\
+      fontfile=${FONT_FILE_SUBTITLE}:\
       fontsize=100:\
       fontcolor=white:\
       x=(main_w/2-text_w/2):\

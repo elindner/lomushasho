@@ -1,12 +1,12 @@
 #!/bin/python
 
-import os
+import argparse
 import math
+import os
+import re
 import subprocess
 import sys
 import tempfile
-
-import argparse
 
 FNULL = open(os.devnull, 'w')
 FFPROBE_BIN = 'ffprobe'
@@ -57,14 +57,14 @@ FILTER_TEMPLATE = """
   [text_fore]
     drawtext=
       text='{TITLE}':
-      font=Impact:
+      fontfile={FONT_TITLE}:
       fontsize=150:
       fontcolor=white:
       x=(main_w/2-text_w/2):
       y=(main_h/2-text_h/2)-80,
     drawtext=
       text='{SUBTITLE}':
-      font=Trebuchet:
+      fontfile={FONT_SUBTITLE}:
       fontsize=100:
       fontcolor=white:
       x=(main_w/2-text_w/2):
@@ -98,6 +98,13 @@ args = arg_parser.parse_args()
 
 def log(msg):
   sys.stderr.write('%s\n' % msg)
+
+
+def get_font_path(font_name):
+  fclist_output = subprocess.check_output(
+      ['fc-match', '--format=%{file}',
+       '%s:style=Regular' % font_name])
+  return fclist_output
 
 
 def get_effective_media_path(file_path):
@@ -153,10 +160,14 @@ def apply_filters(file_path, output_file_path, title, subtitle, duration):
   log('  applying filters ...')
 
   fade_out_start = str(duration - FADE_OUT_TIME_SECS)
+  font_trebuchet = get_font_path('Trebuchet MS')
+  font_impact = get_font_path('Impact')
 
   ffmpeg_filter = FILTER_TEMPLATE.replace('{TITLE}', title)
   ffmpeg_filter = ffmpeg_filter.replace('{SUBTITLE}', subtitle)
   ffmpeg_filter = ffmpeg_filter.replace('{FADE_OUT_START}', fade_out_start)
+  ffmpeg_filter = ffmpeg_filter.replace('{FONT_TITLE}', font_impact)
+  ffmpeg_filter = ffmpeg_filter.replace('{FONT_SUBTITLE}', font_trebuchet)
 
   subprocess.check_call(
       [FFMPEG_BIN] + [
