@@ -173,7 +173,10 @@ def apply_filters(file_path, output_file_path, title, subtitle, duration):
   subprocess.check_call(
       [FFMPEG_BIN] + [
           '-y', '-i', file_path, '-filter_complex', ffmpeg_filter, '-map',
-          '[final]', '-map', '[final_audio]', output_file_path
+          '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset',
+          'slow', '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt',
+          'yuv420p', '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a',
+          'aac', '-b:a', '384k', '-profile:a', 'aac_low', output_file_path
       ],
       stdout=FNULL,
       stderr=FNULL)
