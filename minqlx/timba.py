@@ -80,12 +80,12 @@ class timba(minqlx.Plugin):
         json.dumps(self.credits, sort_keys=True, indent=2))
     self.print_log('Credits saved.')
 
-  def print_bets(self, winners, losers):
+  def print_bets(self, bets, winners, losers):
     self.print_header('Bets for this game:')
-    if self.current_bets:
+    if bets:
       for player_id in winners + losers:
         # for player_id, bet in self.current_bets.items():
-        bet = self.current_bets[player_id]
+        bet = bets[player_id]
         amount = bet['amount'] if player_id in winners else -bet['amount']
         clean_name = self.get_clean_name(self.names_by_id[player_id])
         amount_color = '^2' if player_id in winners else '^1'
@@ -95,11 +95,11 @@ class timba(minqlx.Plugin):
         msg_string = msg_string.replace('on blue', 'on ^4blue^7')
         self.msg(msg_string)
 
-  def get_pot(self):
-    return sum([bet['amount'] for bet in self.current_bets.values()])
+  def get_pot(self, bets):
+    return sum([bet['amount'] for bet in bets.values()])
 
   def close_betting_window(self):
-    pot = self.get_pot()
+    pot = self.get_pot(self.current_bets)
     pot_msg = ('The pot is ^3%d^7 credits.' % pot) if pot > 0 else (
         'There were no bets.')
     self.print_log('Betting is now closed. %s' % pot_msg)
@@ -108,10 +108,10 @@ class timba(minqlx.Plugin):
       self.credits[player_id] -= bet['amount']
       player = self.player(player_id)
       if (player):
+        team = '^1red^7' if bet['team'] == 'red' else '^4blue^7'
         self.player(player_id).tell(
             ('You bet ^3%d^7 credits on team %s. You have ^3%d^7 credits left. '
-             + 'Good luck!') % (bet['amount'], bet['team'],
-                                self.credits[player_id]))
+             + 'Good luck!') % (bet['amount'], team, self.credits[player_id]))
 
   def stop_timers(self):
     self.betting_timer.cancel()
@@ -153,21 +153,27 @@ class timba(minqlx.Plugin):
         BETTING_WINDOW_SECS)
 
   def handle_game_end(self, data):
+    bets = copy.deepcopy(self.current_bets)
+    self.current_bets = {}
+
+    # If the window has been closed, we already took credits
+    # from bettors, so we should return it
+    if data['ABORTED'] and not self.is_betting_window_open():
+      for player_id, bet in bets.items():
+        self.credits[player_id] += bet['amount']
+
     # Should not be necessary, but anyways:
     self.stop_timers()
 
     if data['ABORTED']:
-      for player_id, bet in self.current_bets.items():
-        self.credits[player_id] += bet['amount']
       self.print_log('No one wins: game was aborted.')
-      self.current_bets = {}
       return
 
     if self.is_betting_window_open():
       self.print_error('The betting window never closed!')
       return
 
-    pot = self.get_pot()
+    pot = self.get_pot(bets)
     if not self.is_interesting_game_type() or pot == 0:
       self.print_log('No one wins: There were no bets.')
       return
@@ -175,11 +181,11 @@ class timba(minqlx.Plugin):
     winner = 'red' if self.game.red_score > self.game.blue_score else 'blue'
     loser = 'red' if winner == 'blue' else 'blue'
 
-    bets_teams = set([bet['team'] for bet in self.current_bets.values()])
+    bets_teams = set([bet['team'] for bet in bets.values()])
 
     if bets_teams == {winner}:
       # all bets to the winner, just reset their credits
-      for player_id, bet in self.current_bets.items():
+      for player_id, bet in bets.items():
         self.credits[player_id] += bet['amount']
       self.print_log(
           'When everyone wins, no one wins: everyone bet on the winner.')
@@ -192,21 +198,18 @@ class timba(minqlx.Plugin):
       self.save_credits()
       return
 
-    winner_bets_total = sum([
-        bet['amount']
-        for bet in self.current_bets.values()
-        if bet['team'] == winner
-    ])
+    winner_bets_total = sum(
+        [bet['amount'] for bet in bets.values() if bet['team'] == winner])
 
     winner_ids = [
-        player_id for player_id in self.current_bets.keys()
-        if self.current_bets[player_id]['team'] == winner
+        player_id for player_id in bets.keys()
+        if bets[player_id]['team'] == winner
     ]
-    loser_ids = list(self.current_bets.keys() - winner_ids)
+    loser_ids = list(bets.keys() - winner_ids)
 
     # dict: {player_id: {'team': ('red'|'blue'), 'amount': amount}, ...}
     for player_id in winner_ids:
-      bet = self.current_bets[player_id]
+      bet = bets[player_id]
       ratio = bet['amount'] / winner_bets_total
       win = round(pot * ratio)
       new_credits = self.credits.setdefault(player_id, STARTING_CREDITS) + win
@@ -219,14 +222,11 @@ class timba(minqlx.Plugin):
     for player_id in loser_ids:
       player = self.player(player_id)
       if player:
-        player.tell(
-            'YOU ^1LOST^7 ^3%d^7 CREDITS. You have ^3%d^7 credits left.' %
-            (self.current_bets[player_id]['amount'], self.credits[player_id]))
+        player.tell('YOU ^1LOST^7 ^3%d^7 CREDITS. You have ^3%d^7 credits left.'
+                    % (bets[player_id]['amount'], self.credits[player_id]))
 
-    self.print_bets(winner_ids, loser_ids)
+    self.print_bets(bets, winner_ids, loser_ids)
     self.save_credits()
-
-    self.current_bets = {}
 
   def parse_bet(self, msg):
     if len(msg) < 3:
