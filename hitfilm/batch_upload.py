@@ -66,6 +66,8 @@ parser.add_argument('--video_directory', type=str, required=True,
                     help='The directory that contains the videos.')
 parser.add_argument('--playlist', type=str, default='QuakeLive',
                     help='The YouTube playlist to add the videos to.')
+parser.add_argument('--secrets', type=str, default='',
+                    help='OAuth2 secrets file.')
 
 args = parser.parse_args()
 
@@ -96,6 +98,7 @@ for index, datum in enumerate(data):
       [
           '--privacy=unlisted',
           '--playlist=%s' % args.playlist,
+          '--client-secrets=%s' % args.secrets,
           '--description=%s [%d/%d]' % (description, index + 1, len(data)),
           '--title=%s' % title
       ] +
