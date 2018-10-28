@@ -150,7 +150,7 @@ def trim_video(file_path, start_time):
   _, temp_file_name = tempfile.mkstemp(suffix='_lm.mp4')
   subprocess.check_call(
       [FFMPEG_BIN] +
-      ['-y', '-ss', start_time, '-i', file_path, '-c', 'copy', temp_file_name],
+      ['-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy', temp_file_name],
       stdout=FNULL,
       stderr=FNULL)
 
