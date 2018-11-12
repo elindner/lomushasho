@@ -89,6 +89,7 @@ class Plugin(object):
   registered_hooks = []
   messages = []
   current_map_name = None
+  is_dev_map = False
   current_factory = None
   game = Game('ad')
   players_by_team = {}
@@ -99,6 +100,7 @@ class Plugin(object):
     Plugin.registered_hooks = []
     Plugin.messages = []
     Plugin.current_map_name = None
+    Plugin.is_dev_map = False
     Plugin.current_factory = None
     Plugin.game = Game('ad')
     Plugin.players_by_team = {}
@@ -142,9 +144,19 @@ class Plugin(object):
   def add_hook(self, event, handler, priority=None):
     Plugin.registered_hooks.append([event, handler, priority])
 
-  def change_map(self, map_name, factory):
+  def change_map(self, map_name, factory, dev=False):
     Plugin.current_map_name = map_name
+    Plugin.is_dev_map = dev
     Plugin.current_factory = factory
+
+
+def console_command(cmd_line):
+  tokens = cmd_line.split(' ')
+  cmd = tokens[0]
+  if cmd == 'devmap':
+    Plugin.current_map_name = tokens[1]
+    Plugin.is_dev_map = True
+    Plugin.current_factory = tokens[2]
 
 
 def delay(time):

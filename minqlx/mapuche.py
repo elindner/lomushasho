@@ -45,15 +45,16 @@ class mapuche(minqlx.Plugin):
 
   def print_aliases(self):
     self.print_header('Aliases')
-    for alias in self.aliases:
+    for alias in sorted(self.aliases.keys()):
       mapname = self.aliases[alias]['mapname']
       factory = self.aliases[alias]['factory']
-      self.msg('^5%20s^7 : ^3%s^7 (%s)' % (alias, mapname, factory))
+      dev = ' ^1[dev]^7' if self.aliases[alias]['dev'] else ''
+      self.msg('^5%20s^7 : ^3%s^7 (%s)%s' % (alias, mapname, factory, dev))
     self.msg(' ')
 
   def print_commands(self):
     self.msg('^5!mapuche <alias> [factory]^7: change map with alias.')
-    self.msg('^5!mapuche_set <alias> <map> <factory>^7: set alias.')
+    self.msg('^5!mapuche_set <alias> <map> <factory> [dev]^7: set alias.')
     self.msg('^5!mapuche_remove <alias>^7: remove alias.')
     self.msg('^5!mapuche_reload^7: reoload aliases from disk cache.')
     self.msg('^5!mapuche_aliases^7: list aliases.')
@@ -71,9 +72,11 @@ class mapuche(minqlx.Plugin):
     alias = msg[1]
     map_name = self.aliases[alias]['mapname']
     factory = msg[2] if len(msg) > 2 else self.aliases[alias]['factory']
-
     self.print_log('Changing map to \"^5%s^7\" (\"%s\")' % (alias, map_name))
-    self.change_map(map_name, factory)
+    if self.aliases[alias]['dev']:
+      minqlx.console_command('devmap %s %s' % (map_name, factory))
+    else:
+      self.change_map(map_name, factory)
 
   def cmd_mapuche_set(self, player, msg, channel):
     if len(msg) < 4:
@@ -83,7 +86,8 @@ class mapuche(minqlx.Plugin):
     alias = msg[1]
     map_name = msg[2]
     factory = msg[3]
-    self.aliases[alias] = {'mapname': map_name, 'factory': factory}
+    dev = (msg[4].lower() == 'dev') if len(msg) > 4 else False
+    self.aliases[alias] = {'mapname': map_name, 'factory': factory, 'dev': dev}
     self.save_aliases()
 
   def cmd_mapuche_reload(self, player, msg, channel):
