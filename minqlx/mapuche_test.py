@@ -123,6 +123,9 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual(SINGLE_ALIAS_DATA, mapu.get_aliases())
     minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
     self.assertEqual(expected, mapu.get_aliases())
+    # No overrides!
+    minqlx_fake.call_command('!mapuche_set patio somethingelse ctf')
+    self.assertEqual(expected['patio'], mapu.get_aliases()['patio'])
 
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_set_dev(self):

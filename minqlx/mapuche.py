@@ -84,6 +84,11 @@ class mapuche(minqlx.Plugin):
       return
 
     alias = msg[1]
+
+    if alias in self.aliases.keys():
+      self.print_log('^1Alias ^5"%s"^1 already exists.' % alias)
+      return
+
     map_name = msg[2]
     factory = msg[3]
     dev = (msg[4].lower() == 'dev') if len(msg) > 4 else False
