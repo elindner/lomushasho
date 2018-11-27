@@ -100,7 +100,7 @@ for index, datum in enumerate(data):
   subprocess.call(
       [UPLOADER_BIN] +
       [
-          '--privacy=unlisted',
+          '--privacy=public',
           '--playlist=%s' % args.playlist,
           '--client-secrets=%s' % args.secrets,
           '--description=%s by %s [%d/%d]' % (
