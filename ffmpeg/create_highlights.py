@@ -149,12 +149,19 @@ def trim_video(file_path, start_time):
 
   _, temp_file_name = tempfile.mkstemp(suffix='_lm.mp4')
   subprocess.check_call(
-      [FFMPEG_BIN] +
-      ['-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy', temp_file_name],
+      [FFMPEG_BIN] + [
+          '-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy',
+          temp_file_name
+      ],
       stdout=FNULL,
       stderr=FNULL)
 
   return temp_file_name
+
+
+def escape(msg):
+  return msg.replace('\\', '\\\\').replace('%', '\\\\%').replace(
+      '\'', '\'\\\\\\\'\'').replace(":", "\\:")
 
 
 def apply_filters(file_path, output_file_path, title, subtitle, duration):
@@ -164,8 +171,8 @@ def apply_filters(file_path, output_file_path, title, subtitle, duration):
   font_trebuchet = get_font_path('Trebuchet MS')
   font_impact = get_font_path('Impact')
 
-  ffmpeg_filter = FILTER_TEMPLATE.replace('{TITLE}', title)
-  ffmpeg_filter = ffmpeg_filter.replace('{SUBTITLE}', subtitle)
+  ffmpeg_filter = FILTER_TEMPLATE.replace('{TITLE}', escape(title))
+  ffmpeg_filter = ffmpeg_filter.replace('{SUBTITLE}', escape(subtitle))
   ffmpeg_filter = ffmpeg_filter.replace('{FADE_OUT_START}', fade_out_start)
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_TITLE}', font_impact)
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_SUBTITLE}', font_trebuchet)

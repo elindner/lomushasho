@@ -1,5 +1,4 @@
 #!/bin/python
-
 """
 Feed a CSV file (separated by pipes) with each line containint:
 
@@ -62,16 +61,25 @@ def get_file_name(videos_path, title):
 
 parser = argparse.ArgumentParser(
     description='Batch upload videos to YouTube from a CSV file.')
-parser.add_argument('--file_name', type=str, required=True,
-                    help='The CSV file to process.')
-parser.add_argument('--video_directory', type=str, required=True,
-                    help='The directory that contains the videos.')
-parser.add_argument('--playlist', type=str, default='QuakeLive',
-                    help='The YouTube playlist to add the videos to.')
-parser.add_argument('--secrets', type=str, default='',
-                    help='OAuth2 secrets file.')
-parser.add_argument('--uploader', type=str, default='',
-                    help='Uploader name. Added to description.')
+parser.add_argument(
+    '--file_name', type=str, required=True, help='The CSV file to process.')
+parser.add_argument(
+    '--video_directory',
+    type=str,
+    required=True,
+    help='The directory that contains the videos.')
+parser.add_argument(
+    '--uploader',
+    type=str,
+    required=True,
+    help='Uploader name. Added to description.')
+parser.add_argument(
+    '--playlist',
+    type=str,
+    default='QuakeLive',
+    help='The YouTube playlist to add the videos to.')
+parser.add_argument(
+    '--secrets', type=str, default='', help='OAuth2 secrets file.')
 
 args = parser.parse_args()
 
@@ -82,7 +90,6 @@ data = get_data_from_csv(input_file_name)
 
 videos_path = args.video_directory
 
-
 for datum in data:
   title = datum['title']
   file_name = get_file_name(videos_path, title)
@@ -90,24 +97,20 @@ for datum in data:
     log('Invalid file: %s' % file_name)
     sys.exit(1)
 
-
 for index, datum in enumerate(data):
   log('Uploading %2d of %2d' % (index + 1, len(data)))
 
   description = datum['date'].replace('-', '/')
   title = datum['title']
   file_name = get_file_name(videos_path, title)
-  subprocess.call(
-      [UPLOADER_BIN] +
-      [
-          '--privacy=public',
-          '--playlist=%s' % args.playlist,
-          '--client-secrets=%s' % args.secrets,
-          '--description=%s by %s [%d/%d]' % (
-              description, args.uploader, index + 1, len(data)),
-          '--title=%s' % title
-      ] +
-      [file_name])
+  subprocess.call([UPLOADER_BIN] + [
+      '--privacy=public',
+      '--playlist=%s' % args.playlist,
+      '--client-secrets=%s' % args.secrets,
+      '--description=%s by %s [%d/%d]' %
+      (description, args.uploader, index + 1, len(data)),
+      '--title=%s' % title
+  ] + [file_name])
 
   log('')
 
