@@ -6,8 +6,25 @@ __pycache__/
 # C extensions
 *.so
 
-# Vim temps
-*.swp
+# vim: Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# vim: Session
+Session.vim
+
+# vim: Temporary
+.netrwhist
+*~
+
+# vim: Auto-generated tag files
+tags
+
+# vim: Persistent undo
+[._]*.un~
 
 # Distribution / packaging
 .Python
