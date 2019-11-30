@@ -88,10 +88,26 @@ FILTER_TEMPLATE = """
   [final_audio]
 """.replace(' ', '').replace('\n', '')
 
+
+def str2bool(v):
+  if isinstance(v, bool):
+    return v
+  if v.lower() in ('yes', 'true', 't', 'y', '1'):
+   return True
+  elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+   return False
+  else:
+   raise
+  argparse.ArgumentTypeError('Boolean value expected.')
+
+
 arg_parser = argparse.ArgumentParser(
     description='Lo]v[ushasho Quake Live Highlight builder.')
 arg_parser.add_argument(
     '--file_name', type=str, required=True, help='The CSV file to process.')
+arg_parser.add_argument("--concatenate", type=str2bool, nargs='?',
+                        const=True, default=False,
+                        help="Generate a single video file.")
 
 args = arg_parser.parse_args()
 
@@ -164,7 +180,7 @@ def escape(msg):
       '\'', '\'\\\\\\\'\'').replace(":", "\\:")
 
 
-def apply_filters(file_path, output_file_path, title, subtitle, duration):
+def apply_filters(file_path, output_file_name, title, subtitle, duration):
   log('  applying filters ...')
 
   fade_out_start = str(duration - FADE_OUT_TIME_SECS)
@@ -183,7 +199,26 @@ def apply_filters(file_path, output_file_path, title, subtitle, duration):
           '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset',
           'slow', '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt',
           'yuv420p', '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a',
-          'aac', '-b:a', '384k', '-profile:a', 'aac_low', output_file_path
+          'aac', '-b:a', '384k', '-profile:a', 'aac_low', output_file_name
+      ],
+      stdout=FNULL,
+      stderr=FNULL)
+
+
+def concatenate(file_names, out_file_name):
+  log('-----')
+  log('writing concatenated file: %s' % out_file_name)
+
+  _, concat_list_file_name = tempfile.mkstemp(suffix='concat_lm.txt')
+  concat_list_file = open(concat_list_file_name, 'w')
+  concat_list_file.writelines(
+      ['file %s\n' % os.path.join(os.getcwd(), n) for n in file_names])
+  concat_list_file.close()
+
+  subprocess.check_call(
+      [FFMPEG_BIN] + [
+          '-f', 'concat', '-safe', '0', '-i', concat_list_file_name, '-c',
+          'copy', out_file_name
       ],
       stdout=FNULL,
       stderr=FNULL)
@@ -191,15 +226,18 @@ def apply_filters(file_path, output_file_path, title, subtitle, duration):
 
 log('input file is %s' % args.file_name)
 
+
 data = get_data_from_csv(args.file_name)
+output_file_names = []
 for index, datum in enumerate(get_data_from_csv(args.file_name)):
   title = datum['title']
   date = datum['date']
   file_name = datum['file_name']
   clip_start = datum['start']
-  output_file_path = ''.join(
+  output_file_name = ''.join(
       [c for c in title if c.isalpha() or c.isdigit() or c == ' '] +
       ['.mp4']).rstrip().replace(' ', '_')
+  output_file_names.append(output_file_name)
 
   log('')
   log('-----')
@@ -208,15 +246,18 @@ for index, datum in enumerate(get_data_from_csv(args.file_name)):
   log('- date: %s' % date)
   log('- clip file: %s' % file_name)
   log('- start time: %s' % clip_start)
-  log('- output file: %s' % output_file_path)
+  log('- output file: %s' % output_file_name)
   log('')
 
   trimmed_video_file_name = trim_video(file_name, clip_start)
 
-  apply_filters(trimmed_video_file_name, output_file_path, title, date,
+  apply_filters(trimmed_video_file_name, output_file_name, title, date,
                 get_video_duration(trimmed_video_file_name))
   os.remove(trimmed_video_file_name)
   log('done')
+
+if args.concatenate:
+  concatenate(output_file_names, args.file_name.replace('csv', 'mp4'))
 
 log('')
 log('all done.')
