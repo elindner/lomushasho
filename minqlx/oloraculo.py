@@ -353,7 +353,7 @@ class oloraculo(minqlx.Plugin):
     max_score = max(data['TSCORE0'], data['TSCORE1'])
     if game_type == 'ctf':
       limit = data['CAPTURE_LIMIT']
-    elif game_type == 'ad':
+    elif game_type in ['ad', 'ca']:
       limit = data['SCORE_LIMIT']
 
     if max_score < limit:
