@@ -353,8 +353,12 @@ class oloraculo(minqlx.Plugin):
     max_score = max(data['TSCORE0'], data['TSCORE1'])
     if game_type == 'ctf':
       limit = data['CAPTURE_LIMIT']
-    elif game_type in ['ad', 'ca']:
+    elif game_type == 'ca':
+      limit = data['ROUND_LIMIT']
+    elif game_type == 'ad':
       limit = data['SCORE_LIMIT']
+    else:
+      limit = data['FRAG_LIMIT']
 
     if max_score < limit:
       self.print_log('Not updating ratings: no team won.')
@@ -410,7 +414,7 @@ class oloraculo(minqlx.Plugin):
       ])
 
     for player_name, exposure, win, loss, kill, death in sorted(
-        line_data, key=lambda x: x[1], reverse=True):
+            line_data, key=lambda x: x[1], reverse=True):
       wl_str = get_ratio_string('wl', max_wl, win, loss)
       kd_str = get_ratio_string('kd', max_kd, kill, death)
       self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' % (player_name, exposure, wl_str,

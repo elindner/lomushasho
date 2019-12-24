@@ -129,6 +129,38 @@ class funes(minqlx.Plugin):
     self.msg(format_str % (aggregate[0], aggregate[1]))
 
   def handle_game_end(self, data):
+    """
+    Sample data for CA:
+    {
+      'FACTORY_TITLE': 'Clan Arena',
+      'CAPTURE_LIMIT': 8,
+      'ABORTED': False,
+      'RESTARTED': 0,
+      'TIME_LIMIT': 0,
+      'GAME_TYPE': 'CA',
+      'INFECTED': 0,
+      'TRAINING': 0,
+      'MAP': 'castledeathstalker',
+      'QUADHOG': 0,
+      'LAST_TEAMSCORER': 'none',
+      'LAST_LEAD_CHANGE_TIME': 44975,
+      'SCORE_LIMIT': 150,
+      'TSCORE0': 0,
+      'INSTAGIB': 0,
+      'TSCORE1': 4,
+      'ROUND_LIMIT': 4,
+      'FRAG_LIMIT': 50,
+      'EXIT_MSG': 'Roundlimit hit.',
+      'SERVER_TITLE': 'Lo]v[ushasho Dedicated QuakeLive Server',
+      'LAST_SCORER': 'BluesyQuaker',
+      'FACTORY': 'ca',
+      'FIRST_SCORER': 'BluesyQuaker',
+      'MATCH_GUID': 'ce407e8c-91b8-4797-ab2d-0b3575e56f99',
+      'MERCY_LIMIT': 0,
+      'GAME_LENGTH': 136
+    }
+    """
+
     teams = copy.deepcopy(self.current_teams)
     self.current_teams = {}
 
@@ -140,7 +172,9 @@ class funes(minqlx.Plugin):
     max_score = max(data['TSCORE0'], data['TSCORE1'])
     if game_type == 'ctf':
       limit = data['CAPTURE_LIMIT']
-    elif game_type in ['ad', 'ca']:
+    elif game_type == 'ca':
+      limit = data['ROUND_LIMIT']
+    elif game_type == 'ad':
       limit = data['SCORE_LIMIT']
     else:
       limit = data['FRAG_LIMIT']
