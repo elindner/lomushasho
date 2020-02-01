@@ -344,5 +344,48 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco')
 
 
+  @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
+  @patch('datetime.date', FakeDateWeek10)
+  def test_funes_move_players(self):
+    fun = funes.funes()
+    player_names = [PLAYER_ID_MAP[id].name for id in PLAYER_ID_MAP]
+
+    minqlx_fake.Plugin.set_players_by_team({
+        'red': [
+            PLAYER_ID_MAP[10], PLAYER_ID_MAP[11], PLAYER_ID_MAP[12],
+            PLAYER_ID_MAP[13], PLAYER_ID_MAP[14], PLAYER_ID_MAP[15]
+        ],
+        'blue': [],
+    })
+
+    # entries are:
+    #      mandiok, fundi, toro  5  v  2  p-lu-k, renga, coco
+    #       mandiok, toro, coco  3  v  1  fundi, p-lu-k, renga
+    #     mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco
+    #      mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco
+
+    def teams():
+      return [PLAYER_ID_MAP[i].team for i in [10, 11, 12, 13, 14, 15]]
+
+    # invalid, no change
+    minqlx_fake.call_command('!funes 0')
+    self.assertEqual(['red', 'red', 'red', 'red', 'red', 'red'], teams())
+
+    minqlx_fake.call_command('!funes 1')
+    self.assertEqual(['red', 'red', 'red', 'blue', 'blue', 'blue'], teams())
+
+    minqlx_fake.call_command('!funes 2')
+    self.assertEqual(['red', 'blue', 'red', 'blue', 'blue', 'red'], teams())
+
+    minqlx_fake.call_command('!funes 3')
+    self.assertEqual(['red', 'blue', 'red', 'red', 'blue', 'blue'], teams())
+
+    minqlx_fake.call_command('!funes 4')
+    self.assertEqual(['red', 'blue', 'red', 'blue', 'red', 'blue'], teams())
+
+    # invalid, no change
+    minqlx_fake.call_command('!funes 5')
+    self.assertEqual(['red', 'blue', 'red', 'blue', 'red', 'blue'], teams())
+
 if __name__ == '__main__':
   unittest.main()

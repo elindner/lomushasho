@@ -231,19 +231,21 @@ class funes(minqlx.Plugin):
           continue
 
         seen_matches.add(match_key)
-        names_a = ', '.join([names_by_id[i] for i in team_a])
-        names_b = ', '.join([names_by_id[i] for i in team_b])
         history = self.get_teams_history(game_type, (team_a, team_b))
         aggregate = self.get_teams_history(
             game_type, (team_a, team_b), aggregate=True)
         if history != [0, 0]:
-          day_line_data.append((names_a, history[0], history[1], names_b))
+          day_line_data.append((team_a, history[0], history[1], team_b))
         if aggregate != [0, 0]:
-          aggregated_line_data.append((names_a, aggregate[0], aggregate[1],
-                                       names_b))
+          aggregated_line_data.append((team_a, aggregate[0], aggregate[1],
+                                       team_b))
 
     def line_sorter(line):
       return -(line[1] + line[2])
+
+    def team_str(team):
+      return ', '.join([names_by_id[i] for i in team])
+
 
     day_line_data.sort(key=line_sorter)
     aggregated_line_data.sort(key=line_sorter)
@@ -252,7 +254,8 @@ class funes(minqlx.Plugin):
     if len(day_line_data) > 0:
       self.msg('Today:')
       for data in day_line_data:
-        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' %
+            (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
       self.msg('Today: no history with these players.')
 
@@ -261,6 +264,25 @@ class funes(minqlx.Plugin):
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:
-        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' % data)
+        self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' %
+            (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
       self.msg('%s no history with these players.' % since_str)
+
+    # Move players to teams:
+    if len(msg) > 1 and msg[1].isdigit():
+      index = int(msg[1]) - 1
+      if index < 0 or index > len(aggregated_line_data) - 1:
+        return
+      red_team = aggregated_line_data[index][0]
+      blue_team = aggregated_line_data[index][3]
+
+      # BluesyQuaker on blue:
+      if 76561198014448247 in red_team:
+        red_team, blue_team = blue_team, red_team
+
+      for player in self.players():
+        if player.steam_id in red_team:
+          player.put('red')
+        elif player.steam_id in blue_team:
+          player.put('blue')

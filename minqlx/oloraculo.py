@@ -463,6 +463,7 @@ class oloraculo(minqlx.Plugin):
       self.msg('^3%.4f^7 : ^1%s ^7vs ^4%s^7' % (match[0], red, blue))
     self.msg(' ')
 
+    # Move players to teams:
     if len(msg) > 1 and msg[1].isdigit():
       index = int(msg[1]) - 1
       if index < 0 or index > len(match_qualities) - 1:
