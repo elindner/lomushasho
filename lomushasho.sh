@@ -28,7 +28,7 @@ do_start() {
       +set sv_hostname "Lo]v[ushasho Dedicated QuakeLive Server" \
       +set fs_homepath /home/qadmin/quakelive \
       +set zmq_stats_enable 1 \
-      +set zmq_stats_password "relativamenteestable" \
+      +set zmq_stats_password "<PWD>" \
       +set zmq_stats_port ${GAME_PORT}
 }
 
