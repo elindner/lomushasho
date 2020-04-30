@@ -343,7 +343,6 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
     self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco')
 
-
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
   def test_funes_move_players(self):
@@ -386,6 +385,7 @@ class TestFunes(unittest.TestCase):
     # invalid, no change
     minqlx_fake.call_command('!funes 5')
     self.assertEqual(['red', 'blue', 'red', 'blue', 'red', 'blue'], teams())
+
 
 if __name__ == '__main__':
   unittest.main()

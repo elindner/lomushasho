@@ -51,8 +51,8 @@ class funes(minqlx.Plugin):
       self.history = []
 
   def save_history(self):
-    open(JSON_FILE_PATH, 'w+').write(
-        json.dumps(self.history, sort_keys=True, indent=2))
+    open(JSON_FILE_PATH,
+         'w+').write(json.dumps(self.history, sort_keys=True, indent=2))
     self.print_log('History saved.')
 
   def get_history(self):
@@ -112,8 +112,8 @@ class funes(minqlx.Plugin):
     blue_ids = [p.steam_id for p in blue_team]
 
     history = self.get_teams_history(game_type, [red_ids, blue_ids])
-    aggregate = self.get_teams_history(
-        game_type, [red_ids, blue_ids], aggregate=True)
+    aggregate = self.get_teams_history(game_type, [red_ids, blue_ids],
+                                       aggregate=True)
 
     red_names = ', '.join(
         sorted([self.get_clean_name(p.clean_name) for p in red_team]))
@@ -121,8 +121,8 @@ class funes(minqlx.Plugin):
         sorted([self.get_clean_name(p.clean_name) for p in blue_team]))
 
     self.print_header('teams history (%s)' % game_type)
-    self.msg('  ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' % (red_names, history[0],
-                                                  history[1], blue_names))
+    self.msg('  ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' %
+             (red_names, history[0], history[1], blue_names))
 
     format_str = '^3%%%dd^7 v ^3%%d^7 (since %s)' % (len(red_names) + 4,
                                                      self.get_first_week())
@@ -232,20 +232,19 @@ class funes(minqlx.Plugin):
 
         seen_matches.add(match_key)
         history = self.get_teams_history(game_type, (team_a, team_b))
-        aggregate = self.get_teams_history(
-            game_type, (team_a, team_b), aggregate=True)
+        aggregate = self.get_teams_history(game_type, (team_a, team_b),
+                                           aggregate=True)
         if history != [0, 0]:
           day_line_data.append((team_a, history[0], history[1], team_b))
         if aggregate != [0, 0]:
-          aggregated_line_data.append((team_a, aggregate[0], aggregate[1],
-                                       team_b))
+          aggregated_line_data.append(
+              (team_a, aggregate[0], aggregate[1], team_b))
 
     def line_sorter(line):
       return -(line[1] + line[2])
 
     def team_str(team):
       return ', '.join([names_by_id[i] for i in team])
-
 
     day_line_data.sort(key=line_sorter)
     aggregated_line_data.sort(key=line_sorter)
@@ -255,7 +254,7 @@ class funes(minqlx.Plugin):
       self.msg('Today:')
       for data in day_line_data:
         self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' %
-            (team_str(data[0]), data[1], data[2], team_str(data[3])))
+                 (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
       self.msg('Today: no history with these players.')
 
@@ -265,7 +264,7 @@ class funes(minqlx.Plugin):
       self.msg(since_str)
       for data in aggregated_line_data:
         self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' %
-            (team_str(data[0]), data[1], data[2], team_str(data[3])))
+                 (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
       self.msg('%s no history with these players.' % since_str)
 

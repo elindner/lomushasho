@@ -80,8 +80,8 @@ class Game(object):
 
   def __repr__(self):
     return 'game<%s:%d-%d%s>' % (self.type_short, self.red_score,
-                                 self.blue_score, '(aborted)'
-                                 if self.aborted else '')
+                                 self.blue_score,
+                                 '(aborted)' if self.aborted else '')
 
 
 class Plugin(object):
