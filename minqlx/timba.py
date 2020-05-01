@@ -53,7 +53,8 @@ class timba(minqlx.Plugin):
     return self.betting_timer and self.betting_timer.is_alive()
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|[^a-zA-Z0-9\ ]+.+\W$)', '',
+                  name).lower().strip()
 
   def get_current_bets(self):
     return self.current_bets

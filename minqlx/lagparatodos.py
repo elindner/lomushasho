@@ -23,7 +23,8 @@ class lagparatodos(minqlx.Plugin):
     self.msg('%sLagParaTodos:^7 %s' % (HEADER_COLOR_STRING, msg))
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|[^a-zA-Z0-9\ ]+.+\W$)', '',
+                  name).lower().strip()
 
   def parse_params(self, msg):
     is_ip = lambda s: len(

@@ -117,6 +117,7 @@ class TestOloraculo(unittest.TestCase):
   def test_get_clean_name(self):
     olor = oloraculo.oloraculo()
     self.assertEqual('bluesyquaker', olor.get_clean_name('--bluesyquaker--'))
+    self.assertEqual('bluesy quaker', olor.get_clean_name('==bluesy quaker=='))
     self.assertEqual('renga73', olor.get_clean_name(']v[renga73'))
     self.assertEqual('fundiar', olor.get_clean_name(']v[ - fundiar'))
     self.assertEqual('p-lu-k', olor.get_clean_name(']v[ p-lu-k'))

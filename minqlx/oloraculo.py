@@ -163,7 +163,8 @@ class oloraculo(minqlx.Plugin):
     return copy.deepcopy(self.stats)
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|[^a-zA-Z0-9\ ]+.+\W$)', '',
+                  name).lower().strip()
 
   def name_by_id(self, id):
     if id in self.player_id_map:

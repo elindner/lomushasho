@@ -77,7 +77,7 @@ class TestTimba(unittest.TestCase):
     self.assertTrue(
         [line for line in minqlx_fake.Plugin.messages if txt in line],
         '"%s" not in messages. Messages: %s' %
-        (txt, minqlx_fake.Plugin.messages))
+        (txt, '\n'.join(minqlx_fake.Plugin.messages)))
 
   def assertSavedJson(self, expected, mocked_open):
     file_handle = mocked_open.return_value.__enter__.return_value
