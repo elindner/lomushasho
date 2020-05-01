@@ -50,6 +50,10 @@ class funes(minqlx.Plugin):
     except Exception as e:
       self.print_error('Could not load history (%s)' % e)
       self.history = []
+    # fix "legacy" entries (i.e. those without mapname in 2nd index)
+    for datum in self.history:
+      if len(datum) == 6:
+        datum.insert(1, '')
 
   def save_history(self):
     open(JSON_FILE_PATH,
