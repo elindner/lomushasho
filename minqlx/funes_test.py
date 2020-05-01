@@ -318,8 +318,8 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     self.assertInMessages(
-        'Since 2018w10 (global): no history with these players.')
-    self.assertInMessages('Today (global): no history with these players.')
+        'Since 2018w10 (all maps): no history with these players.')
+    self.assertInMessages('Today (all maps): no history with these players.')
 
     # no matches with this game type (but one with a different one)
     minqlx_fake.Plugin.reset_log()
@@ -329,8 +329,8 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     self.assertInMessages(
-        'Since 2018w10 (global): no history with these players.')
-    self.assertInMessages('Today (global): no history with these players.')
+        'Since 2018w10 (all maps): no history with these players.')
+    self.assertInMessages('Today (all maps): no history with these players.')
 
     # no matches today, some history
     minqlx_fake.Plugin.reset_log()
@@ -344,7 +344,7 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, p-lu-k, blues  2  v  0  toro, renga, coco')
     self.assertInMessages('mandiok, toro, renga  1  v  0  p-lu-k, coco, blues')
     self.assertInMessages('mandiok, toro, coco  0  v  2  p-lu-k, renga, blues')
-    self.assertInMessages('Today (global): no history with these players.')
+    self.assertInMessages('Today (all maps): no history with these players.')
 
     # both matches today and history
     minqlx_fake.Plugin.reset_log()
@@ -362,7 +362,7 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
     self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco')
 
-    # nothing in current map
+    # different map
     minqlx_fake.Plugin.set_map('playa')
     minqlx_fake.Plugin.reset_log()
     minqlx_fake.Plugin.set_players_by_team({
@@ -370,6 +370,22 @@ class TestFunes(unittest.TestCase):
         'blue': [PLAYER_ID_MAP[13], PLAYER_ID_MAP[14], PLAYER_ID_MAP[15]]
     })
     minqlx_fake.call_command('!funes')
+    msgs = minqlx_fake.Plugin.messages
+    self.assertInMessages('mandiok, toro, coco  2  v  1  fundi, p-lu-k, renga')
+    self.assertInMessages('mandiok, toro, coco  4  v  2  fundi, p-lu-k, renga')
+
+    # nothing in current map
+    minqlx_fake.Plugin.set_map('mymap')
+    minqlx_fake.Plugin.reset_log()
+    minqlx_fake.Plugin.set_players_by_team({
+        'red': [PLAYER_ID_MAP[10], PLAYER_ID_MAP[11], PLAYER_ID_MAP[12]],
+        'blue': [PLAYER_ID_MAP[13], PLAYER_ID_MAP[14], PLAYER_ID_MAP[15]]
+    })
+    minqlx_fake.call_command('!funes')
+    self.assertInMessages('Today (mymap): no history with these players.')
+    self.assertInMessages(
+        'Since 2018w10 (mymap): no history with these players.')
+    self.assertInMessages('mandiok, toro, coco  4  v  2  fundi, p-lu-k, renga')
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)

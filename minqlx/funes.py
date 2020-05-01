@@ -257,7 +257,8 @@ class funes(minqlx.Plugin):
     def team_str(team):
       return ', '.join([names_by_id[i] for i in team])
 
-    today_str = 'Today (%s):' % map_name
+    map_name_colorized = '^5%s^7' % map_name
+    today_str = 'Today (%s):' % map_name_colorized
     if len(day_line_data) > 0:
       self.msg(today_str)
       for data in day_line_data:
@@ -267,7 +268,7 @@ class funes(minqlx.Plugin):
       self.msg('%s no history with these players.' % today_str)
 
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-    since_str = 'Since %s (%s):' % (self.get_first_week(), map_name)
+    since_str = 'Since %s (%s):' % (self.get_first_week(), map_name_colorized)
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:
@@ -291,7 +292,7 @@ class funes(minqlx.Plugin):
       day_line_data, aggregated_line_data = self.get_funes_stats(
           players_present, game_type, map_name)
 
-      self.print_history(map_name or 'global', players_present, day_line_data,
+      self.print_history(map_name or 'all maps', players_present, day_line_data,
                          aggregated_line_data)
       self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
