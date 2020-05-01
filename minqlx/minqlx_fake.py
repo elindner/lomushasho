@@ -74,7 +74,7 @@ class Game(object):
 
   def __init__(self,
                type_short,
-               map_name='',
+               map_name=None,
                red_score=0,
                blue_score=0,
                aborted=False):
@@ -82,7 +82,7 @@ class Game(object):
     self.red_score = red_score
     self.blue_score = blue_score
     self.aborted = aborted
-    self.map_name = map_name
+    self.map = map_name
 
   def __repr__(self):
     return 'game<%s:%d-%d%s>' % (self.type_short, self.red_score,
@@ -94,7 +94,6 @@ class Plugin(object):
   registered_commands = []
   registered_hooks = []
   messages = []
-  current_map_name = None
   is_dev_map = False
   current_factory = None
   game = Game('ad')
@@ -105,7 +104,6 @@ class Plugin(object):
     Plugin.registered_commands = []
     Plugin.registered_hooks = []
     Plugin.messages = []
-    Plugin.current_map_name = None
     Plugin.is_dev_map = False
     Plugin.current_factory = None
     Plugin.game = Game('ad')
@@ -124,6 +122,9 @@ class Plugin(object):
         player.team = team
         Plugin.players_list.append(player)
     Plugin.players_by_team = players_by_team
+
+  def set_map(map_name):
+    Plugin.game.map = map_name
 
   # minqlx.Plugin API here:
 
@@ -151,7 +152,7 @@ class Plugin(object):
     Plugin.registered_hooks.append([event, handler, priority])
 
   def change_map(self, map_name, factory, dev=False):
-    Plugin.current_map_name = map_name
+    Plugin.game.map = map_name
     Plugin.is_dev_map = dev
     Plugin.current_factory = factory
 
@@ -160,7 +161,7 @@ def console_command(cmd_line):
   tokens = cmd_line.split(' ')
   cmd = tokens[0]
   if cmd == 'devmap':
-    Plugin.current_map_name = tokens[1]
+    Plugin.game.map = tokens[1]
     Plugin.is_dev_map = True
     Plugin.current_factory = tokens[2]
 
@@ -192,7 +193,7 @@ def run_game_hooks(event, data=None):
 def end_game():
   run_game_hooks(
       'game_end', {
-          'MAP': Plugin.game.map_name,
+          'MAP': Plugin.game.map,
           'TSCORE0': Plugin.game.red_score,
           'TSCORE1': Plugin.game.blue_score,
           'SCORE_LIMIT': 15,
@@ -216,7 +217,7 @@ def start_game(player_id_map,
                   red_score, blue_score, aborted)
   run_game_hooks(
       'game_start', {
-          'MAP': Plugin.game.map_name,
+          'MAP': Plugin.game.map,
           'TSCORE0': Plugin.game.red_score,
           'TSCORE1': Plugin.game.blue_score,
           'SCORE_LIMIT': 15,

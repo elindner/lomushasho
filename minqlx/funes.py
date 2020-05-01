@@ -7,6 +7,7 @@ import os
 import re
 
 HEADER_COLOR_STRING = '^2'
+SUBTITLE_COLOR_STRING = '^3'
 JSON_FILE_NAME = 'funes_history.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
@@ -63,7 +64,7 @@ class funes(minqlx.Plugin):
   def get_history(self):
     return copy.deepcopy(self.history)
 
-  def get_teams_history(self, game_type, teams, aggregate=False):
+  def get_teams_history(self, game_type, teams, map_name=None, aggregate=False):
     relevant_matches = []
     week_key = self.get_week_key()
     team_0_ids = sorted(teams[0])
@@ -73,6 +74,10 @@ class funes(minqlx.Plugin):
     for match in self.history:
       if not aggregate and match[0] != week_key:
         # don't need this date
+        continue
+
+      if map_name and match[1] != map_name:
+        # wrong map
         continue
 
       if match[2] != game_type:
@@ -205,25 +210,10 @@ class funes(minqlx.Plugin):
     self.print_log('History updated.')
     self.save_history()
 
-  def cmd_funes(self, player, msg, channel):
-    game_type = self.game.type_short
-    players_present = [
-        p.steam_id for p in self.players() if p.team in ['red', 'blue']
-    ]
-    names_by_id = dict(
-        zip(players_present, [
-            self.get_clean_name(p.clean_name)
-            for p in self.players()
-            if p.team in ['red', 'blue']
-        ]))
-
-    if len(players_present) < 2:
-      self.print_log('No history for less than 2 players.')
-      return
-
-    players_present.sort()
+  def get_funes_stats(self, players_present, game_type, map_name=None):
     players_per_team = int(len(players_present) / 2)
-    teams = list(itertools.combinations(players_present, players_per_team))
+    teams = list(
+        itertools.combinations(sorted(players_present), players_per_team))
 
     seen_matches = set()
     day_line_data = []
@@ -236,8 +226,10 @@ class funes(minqlx.Plugin):
           continue
 
         seen_matches.add(match_key)
-        history = self.get_teams_history(game_type, (team_a, team_b))
+        history = self.get_teams_history(game_type, (team_a, team_b),
+                                         map_name=map_name)
         aggregate = self.get_teams_history(game_type, (team_a, team_b),
+                                           map_name=map_name,
                                            aggregate=True)
         if history != [0, 0]:
           day_line_data.append((team_a, history[0], history[1], team_b))
@@ -248,23 +240,34 @@ class funes(minqlx.Plugin):
     def line_sorter(line):
       return -(line[1] + line[2])
 
-    def team_str(team):
-      return ', '.join([names_by_id[i] for i in team])
-
     day_line_data.sort(key=line_sorter)
     aggregated_line_data.sort(key=line_sorter)
 
-    self.print_header('Teams history (%s)' % game_type)
+    return day_line_data, aggregated_line_data
+
+  def print_history(self, map_name, players_present, day_line_data,
+                    aggregated_line_data):
+    names_by_id = dict(
+        zip(players_present, [
+            self.get_clean_name(p.clean_name)
+            for p in self.players()
+            if p.team in ['red', 'blue']
+        ]))
+
+    def team_str(team):
+      return ', '.join([names_by_id[i] for i in team])
+
+    today_str = 'Today (%s):' % map_name
     if len(day_line_data) > 0:
-      self.msg('Today:')
+      self.msg(today_str)
       for data in day_line_data:
         self.msg('^3%30s  ^2%d  ^7v  ^2%d  ^3%s' %
                  (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
-      self.msg('Today: no history with these players.')
+      self.msg('%s no history with these players.' % today_str)
 
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-    since_str = 'Since %s:' % (self.get_first_week())
+    since_str = 'Since %s (%s):' % (self.get_first_week(), map_name)
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:
@@ -272,6 +275,25 @@ class funes(minqlx.Plugin):
                  (team_str(data[0]), data[1], data[2], team_str(data[3])))
     else:
       self.msg('%s no history with these players.' % since_str)
+
+  def cmd_funes(self, player, msg, channel):
+    game_type = self.game.type_short
+    players_present = [
+        p.steam_id for p in self.players() if p.team in ['red', 'blue']
+    ]
+
+    if len(players_present) < 2:
+      self.print_log('No history for less than 2 players.')
+      return
+
+    self.print_header('Teams history (%s)' % game_type)
+    for map_name in [self.game.map, None]:
+      day_line_data, aggregated_line_data = self.get_funes_stats(
+          players_present, game_type, map_name)
+
+      self.print_history(map_name or 'global', players_present, day_line_data,
+                         aggregated_line_data)
+      self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
     # Move players to teams:
     if len(msg) > 1 and msg[1].isdigit():

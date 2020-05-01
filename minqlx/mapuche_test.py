@@ -84,13 +84,12 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual({}, mapu.get_aliases())
     # still usable
     minqlx_fake.call_command('!mapuche_set patio duelingkeeps ctf')
-    self.assertEqual({
-        'patio': {
+    self.assertEqual(
+        {'patio': {
             'mapname': 'duelingkeeps',
             'factory': 'ctf',
             'dev': False
-        }
-    }, mapu.get_aliases())
+        }}, mapu.get_aliases())
 
   @patch('builtins.open', mock_open(read_data=SINGLE_ALIAS_JSON))
   def test_loads_aliases(self):
@@ -172,56 +171,57 @@ class TestMapuche(unittest.TestCase):
     self.assertEqual(MULTI_ALIAS_DATA, mapu.get_aliases())
     minqlx_fake.call_command('!mapuche_remove patio')
 
-    self.assertEqual({
-        'asilo': {
-            'mapname': 'asylum',
-            'factory': 'ad',
-            'dev': False
-        },
-        'balcon': {
-            'mapname': '13camp',
-            'factory': 'ad',
-            'dev': True
-        },
-        'herradura': {
-            'mapname': 'courtyard',
-            'factory': 'ad',
-            'dev': False
-        },
-        'lapidas': {
-            'mapname': 'railyard',
-            'factory': 'ad',
-            'dev': False
-        },
-        'playa': {
-            'mapname': 'q3wcp16',
-            'factory': 'ad',
-            'dev': False
-        },
-    }, mapu.get_aliases())
+    self.assertEqual(
+        {
+            'asilo': {
+                'mapname': 'asylum',
+                'factory': 'ad',
+                'dev': False
+            },
+            'balcon': {
+                'mapname': '13camp',
+                'factory': 'ad',
+                'dev': True
+            },
+            'herradura': {
+                'mapname': 'courtyard',
+                'factory': 'ad',
+                'dev': False
+            },
+            'lapidas': {
+                'mapname': 'railyard',
+                'factory': 'ad',
+                'dev': False
+            },
+            'playa': {
+                'mapname': 'q3wcp16',
+                'factory': 'ad',
+                'dev': False
+            },
+        }, mapu.get_aliases())
 
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_change_map(self):
     mapu = mapuche.mapuche()
     self.assertEqual(None, minqlx_fake.Plugin.current_factory)
-    self.assertEqual(None, minqlx_fake.Plugin.current_map_name)
+    self.assertEqual(None, minqlx_fake.Plugin.game.map)
     # force factory
     minqlx_fake.call_command('!mapuche patio ad')
     self.assertEqual('ad', minqlx_fake.Plugin.current_factory)
     self.assertEqual(MULTI_ALIAS_DATA['patio']['mapname'],
-                     minqlx_fake.Plugin.current_map_name)
+                     minqlx_fake.Plugin.game.map)
     # default factory
     minqlx_fake.call_command('!mapuche patio')
     self.assertEqual(MULTI_ALIAS_DATA['patio']['factory'],
                      minqlx_fake.Plugin.current_factory)
     self.assertEqual(MULTI_ALIAS_DATA['patio']['mapname'],
-                     minqlx_fake.Plugin.current_map_name)
+                     minqlx_fake.Plugin.game.map)
     # dev map
     minqlx_fake.call_command('!mapuche balcon')
     self.assertEqual(MULTI_ALIAS_DATA['balcon']['factory'],
                      minqlx_fake.Plugin.current_factory)
     self.assertEqual(MULTI_ALIAS_DATA['balcon']['mapname'],
-                     minqlx_fake.Plugin.current_map_name)
+                     minqlx_fake.Plugin.game.map)
 
   @patch('builtins.open', mock_open(read_data=MULTI_ALIAS_JSON))
   def test_print_aliases(self):

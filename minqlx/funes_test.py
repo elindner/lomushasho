@@ -60,6 +60,11 @@ HISTORY_DATA = [
     ['2018-13', 'playa', 'ad', [10, 11, 12], [13, 14, 15], 17, 12],
     ['2018-13', 'playa', 'ad', [11, 13, 15], [10, 12, 14], 15, 7],
     ['2018-13', 'playa', 'ca', [11, 13, 15], [10, 12, 14], 15, 7],
+    # different map
+    ['2018-10', 'patio', 'ad', [11, 13, 14], [10, 12, 15], 15, 8],
+    ['2018-10', 'patio', 'ad', [10, 12, 15], [11, 13, 14], 15, 8],
+    ['2018-10', 'patio', 'ad', [10, 12, 15], [11, 13, 14], 15, 12],
+    ['2018-11', 'patio', 'ad', [13, 14, 16], [10, 12, 15], 16, 14],
 ]
 
 HISTORY_JSON = json.dumps(HISTORY_DATA)
@@ -103,7 +108,8 @@ class TestFunes(unittest.TestCase):
   def assertInMessages(self, txt):
     self.assertTrue(
         [line for line in minqlx_fake.Plugin.messages if txt in line],
-        '"%s" not in messages' % txt)
+        '"%s" not in messages:\n%s' %
+        (txt, '\n'.join(minqlx_fake.Plugin.messages)))
 
   def assertNotInMessages(self, txt):
     self.assertFalse(
@@ -196,8 +202,8 @@ class TestFunes(unittest.TestCase):
                            7, 15)
 
     # session, historic
-    self.assertInMessages('fundi, p-lu-k, renga 1 v 2 coco, mandiok, toro')
-    self.assertInMessages('                     1 v 3 (since 2018w10)')
+    self.assertInMessages('fundi, p-lu-k, renga 2 v 4 coco, mandiok, toro')
+    self.assertInMessages('                     2 v 5 (since 2018w10)')
 
     # flip red and blue teams:
     minqlx_fake.Plugin.reset_log()
@@ -206,8 +212,8 @@ class TestFunes(unittest.TestCase):
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
-    self.assertInMessages('coco, mandiok, toro 2 v 1 fundi, p-lu-k, renga')
-    self.assertInMessages('                    3 v 1 (since 2018w10)')
+    self.assertInMessages('coco, mandiok, toro 4 v 2 fundi, p-lu-k, renga')
+    self.assertInMessages('                    5 v 2 (since 2018w10)')
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
@@ -229,24 +235,24 @@ class TestFunes(unittest.TestCase):
     red_ids = [10, 15, 12]
     blue_ids = [11, 14, 13]
     teams = (red_ids, blue_ids)
-    self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
-    self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
+    self.assertEqual([4, 2], fun.get_teams_history('ad', teams))
+    self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # aborted
     minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15,
                          True)
-    self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
-    self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
+    self.assertEqual([4, 2], fun.get_teams_history('ad', teams))
+    self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # no team won
     minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 10)
-    self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
-    self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
+    self.assertEqual([4, 2], fun.get_teams_history('ad', teams))
+    self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # empty team
     minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, [], blue_ids, 7, 15)
-    self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
-    self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
+    self.assertEqual([4, 2], fun.get_teams_history('ad', teams))
+    self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
   @patch('builtins.open', new_callable=fake_open, fake=FakeFile(HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
@@ -311,8 +317,9 @@ class TestFunes(unittest.TestCase):
         'blue': [PLAYER_ID_MAP[12], PLAYER_ID_MAP[10]]
     })
     minqlx_fake.call_command('!funes')
-    self.assertInMessages('Since 2018w10: no history with these players.')
-    self.assertInMessages('Today: no history with these players.')
+    self.assertInMessages(
+        'Since 2018w10 (global): no history with these players.')
+    self.assertInMessages('Today (global): no history with these players.')
 
     # no matches with this game type (but one with a different one)
     minqlx_fake.Plugin.reset_log()
@@ -321,8 +328,9 @@ class TestFunes(unittest.TestCase):
         'blue': [PLAYER_ID_MAP[10], PLAYER_ID_MAP[12]]
     })
     minqlx_fake.call_command('!funes')
-    self.assertInMessages('Since 2018w10: no history with these players.')
-    self.assertInMessages('Today: no history with these players.')
+    self.assertInMessages(
+        'Since 2018w10 (global): no history with these players.')
+    self.assertInMessages('Today (global): no history with these players.')
 
     # no matches today, some history
     minqlx_fake.Plugin.reset_log()
@@ -335,8 +343,8 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, toro, blues  0  v  3  p-lu-k, renga, coco')
     self.assertInMessages('mandiok, p-lu-k, blues  2  v  0  toro, renga, coco')
     self.assertInMessages('mandiok, toro, renga  1  v  0  p-lu-k, coco, blues')
-    self.assertInMessages('mandiok, toro, coco  0  v  1  p-lu-k, renga, blues')
-    self.assertInMessages('Today: no history with these players.')
+    self.assertInMessages('mandiok, toro, coco  0  v  2  p-lu-k, renga, blues')
+    self.assertInMessages('Today (global): no history with these players.')
 
     # both matches today and history
     minqlx_fake.Plugin.reset_log()
@@ -346,13 +354,22 @@ class TestFunes(unittest.TestCase):
     })
     minqlx_fake.call_command('!funes')
     msgs = minqlx_fake.Plugin.messages
-    self.assertInMessages('mandiok, toro, coco  2  v  1  fundi, p-lu-k, renga')
+    self.assertInMessages('mandiok, toro, coco  4  v  2  fundi, p-lu-k, renga')
     self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
     self.assertInMessages('mandiok, fundi, toro  1  v  0  p-lu-k, renga, coco')
     self.assertInMessages('mandiok, fundi, toro  5  v  2  p-lu-k, renga, coco')
-    self.assertInMessages('mandiok, toro, coco  3  v  1  fundi, p-lu-k, renga')
+    self.assertInMessages('mandiok, toro, coco  5  v  2  fundi, p-lu-k, renga')
     self.assertInMessages('mandiok, toro, p-lu-k  1  v  1  fundi, renga, coco')
     self.assertInMessages('mandiok, toro, renga  0  v  1  fundi, p-lu-k, coco')
+
+    # nothing in current map
+    minqlx_fake.Plugin.set_map('playa')
+    minqlx_fake.Plugin.reset_log()
+    minqlx_fake.Plugin.set_players_by_team({
+        'red': [PLAYER_ID_MAP[10], PLAYER_ID_MAP[11], PLAYER_ID_MAP[12]],
+        'blue': [PLAYER_ID_MAP[13], PLAYER_ID_MAP[14], PLAYER_ID_MAP[15]]
+    })
+    minqlx_fake.call_command('!funes')
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
