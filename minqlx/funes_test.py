@@ -20,44 +20,46 @@ PLAYER_ID_MAP = {
     14: minqlx_fake.Player(14, 'Renga'),
     15: minqlx_fake.Player(15, 'coco'),
     16: minqlx_fake.Player(16, ']v[ - blues'),
-    17: minqlx_fake.Player(17, 'juanpi'),
+    17: minqlx_fake.Player(17, 'juanpi [[KoK]]'),
     90: minqlx_fake.Player(90, '...cthulhu...'),
 }
 
+MAP_NAME = 'patio'
+
 HISTORY_DATA = [
-    ['2018-10', 'ad', [10, 11, 12], [13, 14, 15], 17, 16],
-    ['2018-10', 'ad', [11, 13, 14], [10, 12, 15], 15, 8],
-    ['2018-10', 'ad', [10, 12, 15], [11, 13, 14], 15, 8],
-    ['2018-10', 'ad', [10, 12, 15], [11, 13, 14], 15, 12],
-    ['2018-10', 'ad', [11, 14, 15], [10, 12, 13], 16, 8],
-    ['2018-10', 'ad', [10, 12, 13], [11, 14, 15], 16, 7],
-    ['2018-11', 'ad', [13, 14, 16], [10, 12, 15], 16, 14],
-    ['2018-11', 'ad', [11, 13, 14], [12, 15, 16], 15, 11],
-    ['2018-11', 'ad', [10, 12, 15], [11, 13, 14], 17, 8],
-    ['2018-11', 'ad', [10, 11, 12], [13, 14, 15], 15, 12],
-    ['2018-11', 'ad', [13, 14, 15], [10, 11, 12], 16, 13],
-    ['2018-11', 'ad', [10, 11, 12], [13, 14, 15], 21, 20],
-    ['2018-11', 'ad', [13, 14, 15], [10, 11, 12], 15, 2],
-    ['2018-12', 'ad', [10, 15], [11, 13], 16, 11],
-    ['2018-12', 'ad', [10, 13, 14], [11, 15, 16], 17, 12],
-    ['2018-12', 'ad', [11, 14, 15, 17], [10, 12, 13, 16], 15, 2],
-    ['2018-12', 'ad', [10, 13, 15, 16], [11, 12, 14, 17], 16, 11],
-    ['2018-12', 'ad', [10, 13, 15, 16], [11, 12, 14, 17], 16, 9],
-    ['2018-12', 'ad', [10, 12, 14], [13, 15, 16], 16, 3],
-    ['2018-12', 'ad', [10, 13, 16], [12, 14, 15], 17, 6],
-    ['2018-12', 'ad', [13, 14, 15], [10, 12, 16], 17, 7],
-    ['2018-12', 'ad', [13, 14, 15], [10, 12, 16], 18, 16],
-    ['2018-12', 'ctf', [15, 16], [10, 12], 8, 3],
-    ['2018-13', 'ad', [10, 12, 14], [11, 13, 16], 15, 5],
-    ['2018-13', 'ad', [10, 12, 14], [11, 13, 16], 15, 0],
-    ['2018-13', 'ad', [11, 14, 15], [10, 13, 16], 16, 14],
-    ['2018-13', 'ad', [10, 13, 16], [11, 14, 15], 17, 16],
-    ['2018-13', 'ad', [10, 13, 16], [12, 14, 15], 15, 5],
-    ['2018-13', 'ad', [13, 14, 15], [10, 12, 16], 15, 4],
-    ['2018-13', 'ad', [10, 11, 12], [13, 14, 15], 17, 15],
-    ['2018-13', 'ad', [10, 11, 12], [13, 14, 15], 17, 12],
-    ['2018-13', 'ad', [11, 13, 15], [10, 12, 14], 15, 7],
-    ['2018-13', 'ca', [11, 13, 15], [10, 12, 14], 15, 7],
+    ['2018-10', '', 'ad', [10, 11, 12], [13, 14, 15], 17, 16],
+    ['2018-10', '', 'ad', [11, 13, 14], [10, 12, 15], 15, 8],
+    ['2018-10', '', 'ad', [10, 12, 15], [11, 13, 14], 15, 8],
+    ['2018-10', '', 'ad', [10, 12, 15], [11, 13, 14], 15, 12],
+    ['2018-10', '', 'ad', [11, 14, 15], [10, 12, 13], 16, 8],
+    ['2018-10', '', 'ad', [10, 12, 13], [11, 14, 15], 16, 7],
+    ['2018-11', '', 'ad', [13, 14, 16], [10, 12, 15], 16, 14],
+    ['2018-11', '', 'ad', [11, 13, 14], [12, 15, 16], 15, 11],
+    ['2018-11', '', 'ad', [10, 12, 15], [11, 13, 14], 17, 8],
+    ['2018-11', '', 'ad', [10, 11, 12], [13, 14, 15], 15, 12],
+    ['2018-11', '', 'ad', [13, 14, 15], [10, 11, 12], 16, 13],
+    ['2018-11', '', 'ad', [10, 11, 12], [13, 14, 15], 21, 20],
+    ['2018-11', '', 'ad', [13, 14, 15], [10, 11, 12], 15, 2],
+    ['2018-12', '', 'ad', [10, 15], [11, 13], 16, 11],
+    ['2018-12', '', 'ad', [10, 13, 14], [11, 15, 16], 17, 12],
+    ['2018-12', '', 'ad', [11, 14, 15, 17], [10, 12, 13, 16], 15, 2],
+    ['2018-12', '', 'ad', [10, 13, 15, 16], [11, 12, 14, 17], 16, 11],
+    ['2018-12', '', 'ad', [10, 13, 15, 16], [11, 12, 14, 17], 16, 9],
+    ['2018-12', '', 'ad', [10, 12, 14], [13, 15, 16], 16, 3],
+    ['2018-12', '', 'ad', [10, 13, 16], [12, 14, 15], 17, 6],
+    ['2018-12', '', 'ad', [13, 14, 15], [10, 12, 16], 17, 7],
+    ['2018-12', '', 'ad', [13, 14, 15], [10, 12, 16], 18, 16],
+    ['2018-12', '', 'ctf', [15, 16], [10, 12], 8, 3],
+    ['2018-13', '', 'ad', [10, 12, 14], [11, 13, 16], 15, 5],
+    ['2018-13', '', 'ad', [10, 12, 14], [11, 13, 16], 15, 0],
+    ['2018-13', '', 'ad', [11, 14, 15], [10, 13, 16], 16, 14],
+    ['2018-13', '', 'ad', [10, 13, 16], [11, 14, 15], 17, 16],
+    ['2018-13', '', 'ad', [10, 13, 16], [12, 14, 15], 15, 5],
+    ['2018-13', '', 'ad', [13, 14, 15], [10, 12, 16], 15, 4],
+    ['2018-13', '', 'ad', [10, 11, 12], [13, 14, 15], 17, 15],
+    ['2018-13', '', 'ad', [10, 11, 12], [13, 14, 15], 17, 12],
+    ['2018-13', '', 'ad', [11, 13, 15], [10, 12, 14], 15, 7],
+    ['2018-13', '', 'ca', [11, 13, 15], [10, 12, 14], 15, 7],
 ]
 
 HISTORY_JSON = json.dumps(HISTORY_DATA)
@@ -136,7 +138,7 @@ class TestFunes(unittest.TestCase):
     fun = funes.funes()
     self.assertEqual([], fun.get_history())
     # still usable
-    minqlx_fake.run_game(PLAYER_ID_MAP, [15, 12], [13, 16], 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, [15, 12], [13, 16], 7, 15)
     teams = ((34, 12), (56, 78))
     self.assertEqual([0, 0], fun.get_teams_history('ad', teams))
     self.assertEqual([0, 0], fun.get_teams_history('ad', teams, aggregate=True))
@@ -149,10 +151,10 @@ class TestFunes(unittest.TestCase):
     # blue won
     red_ids = [15, 12]
     blue_ids = [13, 16]
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15)
 
     expected = copy.deepcopy(HISTORY_DATA)
-    expected.append(['2018-04', 'ad', [12, 15], [13, 16], 7, 15])
+    expected.append(['2018-04', MAP_NAME, 'ad', [12, 15], [13, 16], 7, 15])
     self.assertSavedJson(expected, m)
 
   @patch('builtins.open', new_callable=mock_open, read_data=HISTORY_JSON)
@@ -162,10 +164,10 @@ class TestFunes(unittest.TestCase):
     self.assertEqual(HISTORY_DATA, fun.get_history())
     red_ids = [15, 12]
     blue_ids = [13, 16]
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 15, 14)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 15, 14)
 
     expected = copy.deepcopy(HISTORY_DATA)
-    expected.append(['2018-10', 'ad', [12, 15], [13, 16], 15, 14])
+    expected.append(['2018-10', MAP_NAME, 'ad', [12, 15], [13, 16], 15, 14])
     self.assertSavedJson(expected, m)
 
   @patch('builtins.open', mock_open(read_data=HISTORY_JSON))
@@ -185,7 +187,8 @@ class TestFunes(unittest.TestCase):
   @patch('datetime.date', FakeDateWeek10)
   def test_handles_game_start(self):
     fun = funes.funes()
-    minqlx_fake.start_game(PLAYER_ID_MAP, [11, 13, 14], [12, 10, 15], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, MAP_NAME, [11, 13, 14], [12, 10, 15],
+                           7, 15)
 
     # session, historic
     self.assertInMessages('fundi, p-lu-k, renga 1 v 2 coco, mandiok, toro')
@@ -193,7 +196,8 @@ class TestFunes(unittest.TestCase):
 
     # flip red and blue teams:
     minqlx_fake.Plugin.reset_log()
-    minqlx_fake.start_game(PLAYER_ID_MAP, [12, 10, 15], [11, 13, 14], 15, 1)
+    minqlx_fake.start_game(PLAYER_ID_MAP, MAP_NAME, [12, 10, 15], [11, 13, 14],
+                           15, 1)
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
@@ -205,7 +209,8 @@ class TestFunes(unittest.TestCase):
   def test_handles_game_start_new_player(self):
     fun = funes.funes()
     # id 90 isn't in data
-    minqlx_fake.start_game(PLAYER_ID_MAP, [11, 13, 14], [12, 10, 90], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, MAP_NAME, [11, 13, 14], [12, 10, 90],
+                           7, 15)
 
     msgs = minqlx_fake.Plugin.messages
     # session, historic
@@ -223,17 +228,18 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
 
     # aborted
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15, True)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15,
+                         True)
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
 
     # no team won
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 10)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 10)
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
 
     # empty team
-    minqlx_fake.run_game(PLAYER_ID_MAP, [], blue_ids, 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, [], blue_ids, 7, 15)
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([3, 1], fun.get_teams_history('ad', teams, aggregate=True))
 
@@ -248,12 +254,12 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # blue won
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15)
     self.assertEqual([1, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([5, 3], fun.get_teams_history('ad', teams, aggregate=True))
 
     # red won
-    minqlx_fake.run_game(PLAYER_ID_MAP, red_ids, blue_ids, 15, 1)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 15, 1)
     self.assertEqual([2, 1], fun.get_teams_history('ad', teams))
     self.assertEqual([6, 3], fun.get_teams_history('ad', teams, aggregate=True))
 
@@ -268,7 +274,7 @@ class TestFunes(unittest.TestCase):
     self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
 
     # start game with 2v2 players
-    minqlx_fake.start_game(PLAYER_ID_MAP, red_ids, blue_ids, 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15)
     current_teams = fun.teams()
     self.assertEqual(3, len(fun.teams()['red']))
     self.assertEqual(3, len(fun.teams()['blue']))

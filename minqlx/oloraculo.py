@@ -49,8 +49,9 @@ class Db(object):
 
   def __eq__(self, other):
     return (self._ratings_dict == other._ratings_dict) and (
-        self._winloss_dict == other._winloss_dict) and (
-            self._killdeath_dict == other._killdeath_dict)
+        self._winloss_dict
+        == other._winloss_dict) and (self._killdeath_dict
+                                     == other._killdeath_dict)
 
   def _ratings(self, game_type):
     return self._ratings_dict.setdefault(game_type, {})
@@ -71,8 +72,8 @@ class Db(object):
     self._killdeath(game_type)[int(player_id)] = list(killdeath)
 
   def get_rating(self, game_type, player_id):
-    return self._ratings(game_type).setdefault(
-        int(player_id), trueskill.Rating())
+    return self._ratings(game_type).setdefault(int(player_id),
+                                               trueskill.Rating())
 
   def get_winloss(self, game_type, player_id):
     return self._winloss(game_type).setdefault(int(player_id), [0, 0])
@@ -103,8 +104,8 @@ class Db(object):
     for game_type in json_data:
       for player_id in player_ids:
         data = json_data[game_type][player_id]
-        self.set_rating(game_type, player_id, trueskill.Rating(
-            data[0], data[1]))
+        self.set_rating(game_type, player_id,
+                        trueskill.Rating(data[0], data[1]))
         self.set_winloss(game_type, player_id, [data[2], data[3]])
         self.set_killdeath(game_type, player_id, [data[4], data[5]])
 
@@ -162,7 +163,7 @@ class oloraculo(minqlx.Plugin):
     return copy.deepcopy(self.stats)
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
 
   def name_by_id(self, id):
     if id in self.player_id_map:
@@ -414,11 +415,11 @@ class oloraculo(minqlx.Plugin):
       ])
 
     for player_name, exposure, win, loss, kill, death in sorted(
-            line_data, key=lambda x: x[1], reverse=True):
+        line_data, key=lambda x: x[1], reverse=True):
       wl_str = get_ratio_string('wl', max_wl, win, loss)
       kd_str = get_ratio_string('kd', max_kd, kill, death)
-      self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' % (player_name, exposure, wl_str,
-                                                  kd_str))
+      self.msg('^5%12s^7: ^3%5.2f^7 · %s · %s' %
+               (player_name, exposure, wl_str, kd_str))
     self.msg(' ')
 
   def print_log(self, msg):
@@ -448,8 +449,8 @@ class oloraculo(minqlx.Plugin):
       return
 
     # Only take the first 4 matches.
-    match_qualities = sorted(
-        self.get_match_qualities(players_present), reverse=True)[:4]
+    match_qualities = sorted(self.get_match_qualities(players_present),
+                             reverse=True)[:4]
 
     for match in match_qualities:
       # BluesyQuaker on blue:

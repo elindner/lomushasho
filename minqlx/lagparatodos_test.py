@@ -35,8 +35,8 @@ class TestLagParaTodos(unittest.TestCase):
       first_write = file_handle.writelines.call_args_list[0]
       write_arguments = first_write[0]
       saved_text = write_arguments[0]
-      self.assertEqual(
-          sorted(['%s\n' % l for l in expected]), sorted(saved_text))
+      self.assertEqual(sorted(['%s\n' % l for l in expected]),
+                       sorted(saved_text))
     else:
       self.assertEqual(0, len(file_handle.writelines.call_args_list))
 
@@ -77,7 +77,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_no_command(self):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos', player)
     self.assertEqual(
         ['Format: !lagparatodos <set|remove> [whitelist] [latency_limit]'],
@@ -87,7 +87,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_reset(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos remove', player)
     self.assertMessages(['LagParaTodos: Rules removed. Back to normal.'])
     self.assertSavedConfig(None, m)
@@ -96,7 +96,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_set(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos set', player)
     self.assertMessages([
         '          zoth-ommog: 1000ms added',
@@ -112,7 +112,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_set_only_one_player(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game({10: PLAYER_ID_MAP[10]}, [10], [], 7, 15)
+    minqlx_fake.start_game({10: PLAYER_ID_MAP[10]}, '', [10], [], 7, 15)
     minqlx_fake.call_command('!lagparatodos set', player)
     self.assertMessages(
         ['There should be at least two players. Nothing changed'])
@@ -121,7 +121,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_set_latency_limit(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos set 500', player)
     self.assertMessages([
         '          zoth-ommog:  500ms added',
@@ -137,7 +137,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_set_whitelist(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos set 1.2.3.5', player)
     self.assertMessages([
         '          zoth-ommog: 1000ms added',
@@ -165,7 +165,7 @@ class TestLagParaTodos(unittest.TestCase):
   def test_lagparatodos_set_whitelist_and_latency_limit(self, m):
     lpt = lagparatodos.lagparatodos()
     player = PLAYER_ID_MAP[10]
-    minqlx_fake.start_game(PLAYER_ID_MAP, [10, 11], [12, 13], 7, 15)
+    minqlx_fake.start_game(PLAYER_ID_MAP, '', [10, 11], [12, 13], 7, 15)
     minqlx_fake.call_command('!lagparatodos set 1.2.3.5 500', player)
     self.assertMessages([
         '          zoth-ommog:  500ms added',

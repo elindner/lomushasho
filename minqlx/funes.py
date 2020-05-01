@@ -31,7 +31,7 @@ class funes(minqlx.Plugin):
     self.msg('%sFunes:^1 %s' % (HEADER_COLOR_STRING, msg))
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
 
   def get_week_key(self):
     iso = datetime.date.today().isocalendar()
@@ -70,7 +70,7 @@ class funes(minqlx.Plugin):
         # don't need this date
         continue
 
-      if match[1] != game_type:
+      if match[2] != game_type:
         # wrong game type
         continue
 
@@ -190,7 +190,7 @@ class funes(minqlx.Plugin):
       return
 
     datum = [
-        self.get_week_key(), game_type,
+        self.get_week_key(), data['MAP'], game_type,
         sorted([p.steam_id for p in red_team]),
         sorted([p.steam_id for p in blue_team]), self.game.red_score,
         self.game.blue_score

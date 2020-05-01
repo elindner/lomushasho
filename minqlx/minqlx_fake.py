@@ -72,11 +72,17 @@ class Player(object):
 
 class Game(object):
 
-  def __init__(self, type_short, red_score=0, blue_score=0, aborted=False):
+  def __init__(self,
+               type_short,
+               map_name='',
+               red_score=0,
+               blue_score=0,
+               aborted=False):
     self.type_short = type_short
     self.red_score = red_score
     self.blue_score = blue_score
     self.aborted = aborted
+    self.map_name = map_name
 
   def __repr__(self):
     return 'game<%s:%d-%d%s>' % (self.type_short, self.red_score,
@@ -186,6 +192,7 @@ def run_game_hooks(event, data=None):
 def end_game():
   run_game_hooks(
       'game_end', {
+          'MAP': Plugin.game.map_name,
           'TSCORE0': Plugin.game.red_score,
           'TSCORE1': Plugin.game.blue_score,
           'SCORE_LIMIT': 15,
@@ -199,15 +206,17 @@ def countdown_game():
 
 
 def start_game(player_id_map,
+               map_name,
                red_team_ids,
                blue_team_ids,
                red_score,
                blue_score,
                aborted=False):
-  setup_game_data(player_id_map, red_team_ids, blue_team_ids, red_score,
-                  blue_score, aborted)
+  setup_game_data(player_id_map, map_name, red_team_ids, blue_team_ids,
+                  red_score, blue_score, aborted)
   run_game_hooks(
       'game_start', {
+          'MAP': Plugin.game.map_name,
           'TSCORE0': Plugin.game.red_score,
           'TSCORE1': Plugin.game.blue_score,
           'SCORE_LIMIT': 15,
@@ -217,13 +226,14 @@ def start_game(player_id_map,
 
 
 def run_game(player_id_map,
+             map_name,
              red_team_ids,
              blue_team_ids,
              red_score,
              blue_score,
              aborted=False):
-  start_game(player_id_map, red_team_ids, blue_team_ids, red_score, blue_score,
-             aborted)
+  start_game(player_id_map, map_name, red_team_ids, blue_team_ids, red_score,
+             blue_score, aborted)
   end_game()
 
 
@@ -232,6 +242,7 @@ def frame():
 
 
 def setup_game_data(player_id_map,
+                    map_name,
                     red_team_ids,
                     blue_team_ids,
                     red_score,
@@ -243,7 +254,7 @@ def setup_game_data(player_id_map,
   for player_id in blue_team_ids:
     players_by_teams['blue'].append(player_id_map[player_id])
 
-  Plugin.set_game(Game('ad', red_score, blue_score, aborted))
+  Plugin.set_game(Game('ad', map_name, red_score, blue_score, aborted))
   Plugin.set_players_by_team(players_by_teams)
 
 

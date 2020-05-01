@@ -92,7 +92,7 @@ class TestOloraculo(unittest.TestCase):
   def test_saves_stats(self, m):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 15)
     expected_data = {
         'ad': {
             '12': [2, 0, 3, 1, 200, 100],
@@ -124,6 +124,7 @@ class TestOloraculo(unittest.TestCase):
     self.assertEqual('cococrue', olor.get_clean_name('coco]v[crue'))
     self.assertEqual('toro', olor.get_clean_name('toro'))
     self.assertEqual('jaunpi.diazv', olor.get_clean_name('jaunpi.diazv'))
+    self.assertEqual('jaunpi', olor.get_clean_name('jaunpi [[KoK]]'))
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
   def test_oloraculo_stats(self):
@@ -168,7 +169,7 @@ class TestOloraculo(unittest.TestCase):
   def test_handles_game_end(self):
     olor = oloraculo.oloraculo()
     # red_team_ids, blue_team_ids, red_score, blue_score
-    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15)
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 15)
     stats = olor.get_stats()
     # winloss
     self.assertEqual([3, 1], stats.get_winloss('ad', 12))
@@ -187,15 +188,15 @@ class TestOloraculo(unittest.TestCase):
     original_stats = olor.get_stats()
 
     # aborted
-    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 15, True)
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 15, True)
     self.assertEqual(original_stats, olor.get_stats())
 
     # final score is < required (15)
-    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 14)
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 14)
     self.assertEqual(original_stats, olor.get_stats())
 
     # all valid
-    minqlx_fake.run_game(PLAYER_ID_MAP, [56, 78], [12, 34], 7, 16)
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 16)
     self.assertNotEqual(original_stats, olor.get_stats())
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
@@ -236,9 +237,8 @@ class TestOloraculo(unittest.TestCase):
       actual = actual_predictions[index]
       parts = actual.replace(' vs ', ':').replace(' ', '').split(':')
       self.assertEqual(expected[0], float(parts[0]))
-      self.assertEqual(
-          match_key(expected[1], expected[2]),
-          match_key(parts[1].split(','), parts[2].split(',')))
+      self.assertEqual(match_key(expected[1], expected[2]),
+                       match_key(parts[1].split(','), parts[2].split(',')))
 
   @patch('builtins.open', mock_open(read_data=RATINGS_JSON))
   def test_oloraculo_move_players(self):

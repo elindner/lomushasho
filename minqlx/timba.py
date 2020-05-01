@@ -53,7 +53,7 @@ class timba(minqlx.Plugin):
     return self.betting_timer and self.betting_timer.is_alive()
 
   def get_clean_name(self, name):
-    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$)', '', name).lower()
+    return re.sub(r'([\W]*\]v\[[\W]*|^\W+|\W+$|\W+.+\W$)', '', name).lower()
 
   def get_current_bets(self):
     return self.current_bets
@@ -70,14 +70,14 @@ class timba(minqlx.Plugin):
       for key, value in credits.items():
         self.credits[int(key)] = value
 
-      self.print_log(
-          'Loaded credits for %s players.' % len(self.credits.keys()))
+      self.print_log('Loaded credits for %s players.' %
+                     len(self.credits.keys()))
     except Exception as e:
       self.print_error('Could not load credits (%s)' % e)
 
   def save_credits(self):
-    open(JSON_FILE_PATH, 'w+').write(
-        json.dumps(self.credits, sort_keys=True, indent=2))
+    open(JSON_FILE_PATH,
+         'w+').write(json.dumps(self.credits, sort_keys=True, indent=2))
     self.print_log('Credits saved.')
 
   def print_bets(self, bets, winners, losers):
@@ -100,8 +100,8 @@ class timba(minqlx.Plugin):
 
   def close_betting_window(self):
     pot = self.get_pot(self.current_bets)
-    pot_msg = ('The pot is ^3%d^7 credits.' % pot) if pot > 0 else (
-        'There were no bets.')
+    pot_msg = ('The pot is ^3%d^7 credits.' %
+               pot) if pot > 0 else ('There were no bets.')
     self.print_log('Betting is now closed. %s' % pot_msg)
 
     for player_id, bet in self.current_bets.items():
@@ -222,8 +222,9 @@ class timba(minqlx.Plugin):
     for player_id in loser_ids:
       player = self.player(player_id)
       if player:
-        player.tell('YOU ^1LOST^7 ^3%d^7 CREDITS. You have ^3%d^7 credits left.'
-                    % (bets[player_id]['amount'], self.credits[player_id]))
+        player.tell(
+            'YOU ^1LOST^7 ^3%d^7 CREDITS. You have ^3%d^7 credits left.' %
+            (bets[player_id]['amount'], self.credits[player_id]))
 
     self.print_bets(bets, winner_ids, loser_ids)
     self.save_credits()
@@ -259,8 +260,9 @@ class timba(minqlx.Plugin):
     current_credits = self.credits.setdefault(player_id, STARTING_CREDITS)
 
     if not self.is_betting_window_open():
-      player.tell('Betting is not allowed now. You have ^3%d^7 credits to bet.'
-                  % current_credits)
+      player.tell(
+          'Betting is not allowed now. You have ^3%d^7 credits to bet.' %
+          current_credits)
       return
 
     if len(msg) == 1:
@@ -291,5 +293,5 @@ class timba(minqlx.Plugin):
     team = '^1red^7' if team == 'red' else '^4blue^7'
     time_left = self.betting_window_end_time - int(time.time())
     player.tell(('You bet ^3%d^7 credits on team %s. ' +
-                 'You have ^3%d^7 seconds to change your bet.') % (amount, team,
-                                                                   time_left))
+                 'You have ^3%d^7 seconds to change your bet.') %
+                (amount, team, time_left))
