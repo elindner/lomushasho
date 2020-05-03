@@ -18,7 +18,7 @@ class funes(minqlx.Plugin):
   def __init__(self):
     # Dict: {'red':[id, ...], 'blue':[id, ...]}
     self.current_teams = {}
-    # List: [['yyyy-ww', 'gt', [r_ids], [b_ids], r_score, b_score], ...]
+    # List: [['yyyy-ww', 'map', 'gt', [r_ids], [b_ids], r_score, b_score], ...]
     self.history = None
     self.load_history()
     self.add_command('funes', self.cmd_funes, 2)
