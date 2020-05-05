@@ -258,7 +258,7 @@ class funes(minqlx.Plugin):
       return ', '.join([names_by_id[i] for i in team])
 
     map_name_colorized = '^5%s^7' % map_name
-    today_str = 'Today (%s):' % map_name_colorized
+    today_str = 'This week (%s):' % map_name_colorized
     if len(day_line_data) > 0:
       self.msg(today_str)
       for data in day_line_data:

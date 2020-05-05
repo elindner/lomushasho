@@ -319,7 +319,8 @@ class TestFunes(unittest.TestCase):
     minqlx_fake.call_command('!funes')
     self.assertInMessages(
         'Since 2018w10 (all maps): no history with these players.')
-    self.assertInMessages('Today (all maps): no history with these players.')
+    self.assertInMessages(
+        'This week (all maps): no history with these players.')
 
     # no matches with this game type (but one with a different one)
     minqlx_fake.Plugin.reset_log()
@@ -330,7 +331,8 @@ class TestFunes(unittest.TestCase):
     minqlx_fake.call_command('!funes')
     self.assertInMessages(
         'Since 2018w10 (all maps): no history with these players.')
-    self.assertInMessages('Today (all maps): no history with these players.')
+    self.assertInMessages(
+        'This week (all maps): no history with these players.')
 
     # no matches today, some history
     minqlx_fake.Plugin.reset_log()
@@ -344,7 +346,8 @@ class TestFunes(unittest.TestCase):
     self.assertInMessages('mandiok, p-lu-k, blues  2  v  0  toro, renga, coco')
     self.assertInMessages('mandiok, toro, renga  1  v  0  p-lu-k, coco, blues')
     self.assertInMessages('mandiok, toro, coco  0  v  2  p-lu-k, renga, blues')
-    self.assertInMessages('Today (all maps): no history with these players.')
+    self.assertInMessages(
+        'This week (all maps): no history with these players.')
 
     # both matches today and history
     minqlx_fake.Plugin.reset_log()
@@ -382,7 +385,7 @@ class TestFunes(unittest.TestCase):
         'blue': [PLAYER_ID_MAP[13], PLAYER_ID_MAP[14], PLAYER_ID_MAP[15]]
     })
     minqlx_fake.call_command('!funes')
-    self.assertInMessages('Today (mymap): no history with these players.')
+    self.assertInMessages('This week (mymap): no history with these players.')
     self.assertInMessages(
         'Since 2018w10 (mymap): no history with these players.')
     self.assertInMessages('mandiok, toro, coco  4  v  2  fundi, p-lu-k, renga')
