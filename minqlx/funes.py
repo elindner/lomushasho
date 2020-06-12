@@ -121,16 +121,19 @@ class funes(minqlx.Plugin):
     red_ids = [p.steam_id for p in red_team]
     blue_ids = [p.steam_id for p in blue_team]
 
-    history = self.get_teams_history(game_type, [red_ids, blue_ids])
+    map_name = data['MAP']
+    history = self.get_teams_history(game_type, [red_ids, blue_ids],
+                                     map_name=self.game.map)
     aggregate = self.get_teams_history(game_type, [red_ids, blue_ids],
-                                       aggregate=True)
+                                       aggregate=True,
+                                       map_name=self.game.map)
 
     red_names = ', '.join(
         sorted([self.get_clean_name(p.clean_name) for p in red_team]))
     blue_names = ', '.join(
         sorted([self.get_clean_name(p.clean_name) for p in blue_team]))
 
-    self.print_header('teams history (%s)' % game_type)
+    self.print_header('teams history (%s, %s)' % (game_type, map_name))
     self.msg('  ^1%s^7 ^3%d^7 v ^3%d^7 ^4%s^7' %
              (red_names, history[0], history[1], blue_names))
 
@@ -257,8 +260,7 @@ class funes(minqlx.Plugin):
     def team_str(team):
       return ', '.join([names_by_id[i] for i in team])
 
-    map_name_colorized = '^5%s^7' % map_name
-    today_str = 'This week (%s):' % map_name_colorized
+    today_str = 'This week:'
     if len(day_line_data) > 0:
       self.msg(today_str)
       for data in day_line_data:
@@ -268,7 +270,7 @@ class funes(minqlx.Plugin):
       self.msg('%s no history with these players.' % today_str)
 
     self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
-    since_str = 'Since %s (%s):' % (self.get_first_week(), map_name_colorized)
+    since_str = 'Since %s:' % (self.get_first_week())
     if len(aggregated_line_data) > 0:
       self.msg(since_str)
       for data in aggregated_line_data:
@@ -287,14 +289,12 @@ class funes(minqlx.Plugin):
       self.print_log('No history for less than 2 players.')
       return
 
-    self.print_header('Teams history (%s)' % game_type)
-    for map_name in [self.game.map, None]:
-      day_line_data, aggregated_line_data = self.get_funes_stats(
-          players_present, game_type, map_name)
-
-      self.print_history(map_name or 'all maps', players_present, day_line_data,
-                         aggregated_line_data)
-      self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+    self.print_header('Teams history (%s, %s)' % (game_type, self.game.map))
+    day_line_data, aggregated_line_data = self.get_funes_stats(
+        players_present, game_type, self.game.map)
+    self.print_history(self.game.map, players_present, day_line_data,
+                       aggregated_line_data)
+    self.msg('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
 
     # Move players to teams:
     if len(msg) > 1 and msg[1].isdigit():
