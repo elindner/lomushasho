@@ -228,8 +228,17 @@ log('input file is %s' % args.file_name)
 
 
 data = get_data_from_csv(args.file_name)
+
+# Validate files
+for index, datum in enumerate(data):
+  file_name = datum['file_name']
+  if not os.path.exists(file_name):
+    log('ERROR: file does not exist: "%s"' % file_name)
+    sys.exit(1)
+
+
 output_file_names = []
-for index, datum in enumerate(get_data_from_csv(args.file_name)):
+for index, datum in enumerate(data):
   title = datum['title']
   date = datum['date']
   file_name = datum['file_name']
