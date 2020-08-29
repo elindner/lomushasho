@@ -93,20 +93,25 @@ def str2bool(v):
   if isinstance(v, bool):
     return v
   if v.lower() in ('yes', 'true', 't', 'y', '1'):
-   return True
+    return True
   elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-   return False
+    return False
   else:
-   raise
+    raise
   argparse.ArgumentTypeError('Boolean value expected.')
 
 
 arg_parser = argparse.ArgumentParser(
     description='Lo]v[ushasho Quake Live Highlight builder.')
-arg_parser.add_argument(
-    '--file_name', type=str, required=True, help='The CSV file to process.')
-arg_parser.add_argument("--concatenate", type=str2bool, nargs='?',
-                        const=True, default=False,
+arg_parser.add_argument('--file_name',
+                        type=str,
+                        required=True,
+                        help='The CSV file to process.')
+arg_parser.add_argument("--concatenate",
+                        type=str2bool,
+                        nargs='?',
+                        const=True,
+                        default=False,
                         help="Generate a single video file.")
 
 args = arg_parser.parse_args()
@@ -164,13 +169,12 @@ def trim_video(file_path, start_time):
   effective_file_path = get_effective_media_path(file_path)
 
   _, temp_file_name = tempfile.mkstemp(suffix='_lm.mp4')
-  subprocess.check_call(
-      [FFMPEG_BIN] + [
-          '-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy',
-          temp_file_name
-      ],
-      stdout=FNULL,
-      stderr=FNULL)
+  subprocess.check_call([FFMPEG_BIN] + [
+      '-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy',
+      temp_file_name
+  ],
+                        stdout=FNULL,
+                        stderr=FNULL)
 
   return temp_file_name
 
@@ -193,16 +197,15 @@ def apply_filters(file_path, output_file_name, title, subtitle, duration):
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_TITLE}', font_impact)
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_SUBTITLE}', font_trebuchet)
 
-  subprocess.check_call(
-      [FFMPEG_BIN] + [
-          '-y', '-i', file_path, '-filter_complex', ffmpeg_filter, '-map',
-          '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset',
-          'slow', '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt',
-          'yuv420p', '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a',
-          'aac', '-b:a', '384k', '-profile:a', 'aac_low', output_file_name
-      ],
-      stdout=FNULL,
-      stderr=FNULL)
+  subprocess.check_call([FFMPEG_BIN] + [
+      '-y', '-i', file_path, '-filter_complex', ffmpeg_filter, '-map',
+      '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset', 'slow',
+      '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt', 'yuv420p',
+      '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a', 'aac', '-b:a',
+      '384k', '-profile:a', 'aac_low', output_file_name
+  ],
+                        stdout=FNULL,
+                        stderr=FNULL)
 
 
 def concatenate(file_names, out_file_name):
@@ -215,17 +218,15 @@ def concatenate(file_names, out_file_name):
       ['file %s\n' % os.path.join(os.getcwd(), n) for n in file_names])
   concat_list_file.close()
 
-  subprocess.check_call(
-      [FFMPEG_BIN] + [
-          '-f', 'concat', '-safe', '0', '-i', concat_list_file_name, '-c',
-          'copy', out_file_name
-      ],
-      stdout=FNULL,
-      stderr=FNULL)
+  subprocess.check_call([FFMPEG_BIN] + [
+      '-f', 'concat', '-safe', '0', '-i', concat_list_file_name, '-c', 'copy',
+      out_file_name
+  ],
+                        stdout=FNULL,
+                        stderr=FNULL)
 
 
 log('input file is %s' % args.file_name)
-
 
 data = get_data_from_csv(args.file_name)
 
@@ -236,6 +237,10 @@ for index, datum in enumerate(data):
     log('ERROR: file does not exist: "%s"' % file_name)
     sys.exit(1)
 
+  start = datum['start']
+  if not re.match(r'^\d\d:\d\d$', start):
+    log('ERROR: "%s" is not a valid value for start time' % start)
+    sys.exit(1)
 
 output_file_names = []
 for index, datum in enumerate(data):
