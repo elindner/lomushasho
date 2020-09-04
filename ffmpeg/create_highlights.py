@@ -170,17 +170,24 @@ def get_video_duration(file_path):
   return float(output_lines[0].strip())
 
 
+def run_or_die(cmd):
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout, stderr = p.communicate()
+  if p.returncode != 0:
+    log('ERROR:')
+    print stderr
+    sys.exit(p.returncode)
+
+
 def trim_video(file_path, start_time):
   log('  trimming ...')
   effective_file_path = get_effective_media_path(file_path)
 
   _, temp_file_name = tempfile.mkstemp(suffix='_lm.mp4')
-  subprocess.check_call([FFMPEG_BIN] + [
+  run_or_die([FFMPEG_BIN] + [
       '-y', '-ss', start_time, '-i', effective_file_path, '-c', 'copy',
       temp_file_name
-  ],
-                        stdout=FNULL,
-                        stderr=FNULL)
+  ])
 
   return temp_file_name
 
@@ -203,15 +210,13 @@ def apply_filters(file_path, output_file_name, title, subtitle, duration):
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_TITLE}', font_impact)
   ffmpeg_filter = ffmpeg_filter.replace('{FONT_SUBTITLE}', font_trebuchet)
 
-  subprocess.check_call([FFMPEG_BIN] + [
+  run_or_die([FFMPEG_BIN] + [
       '-y', '-i', file_path, '-filter_complex', ffmpeg_filter, '-map',
       '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset', 'slow',
       '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt', 'yuv420p',
       '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a', 'aac', '-b:a',
       '384k', '-profile:a', 'aac_low', output_file_name
-  ],
-                        stdout=FNULL,
-                        stderr=FNULL)
+  ])
 
 
 def concatenate(file_names, out_file_name):
@@ -224,12 +229,10 @@ def concatenate(file_names, out_file_name):
       ['file %s\n' % os.path.join(os.getcwd(), n) for n in file_names])
   concat_list_file.close()
 
-  subprocess.check_call([FFMPEG_BIN] + [
+  run_or_die([FFMPEG_BIN] + [
       '-f', 'concat', '-safe', '0', '-i', concat_list_file_name, '-c', 'copy',
       out_file_name
-  ],
-                        stdout=FNULL,
-                        stderr=FNULL)
+  ])
 
 
 log('input file is %s' % args.file_name)
@@ -237,8 +240,10 @@ log('input file is %s' % args.file_name)
 data = get_data_from_csv(args.file_name)
 
 # Validate files
+log('validating input csv file...')
 for index, datum in enumerate(data):
   file_name = datum['file_name']
+
   if not os.path.exists(file_name):
     log('ERROR: file does not exist: "%s"' % file_name)
     sys.exit(1)
@@ -246,6 +251,14 @@ for index, datum in enumerate(data):
   start = datum['start']
   if not re.match(r'^\d\d:\d\d$', start):
     log('ERROR: "%s" is not a valid value for start time' % start)
+    sys.exit(1)
+
+  dur = get_video_duration(datum['file_name'])
+  min_secs = start.split(':')
+  start_secs = int(min_secs[0]) * 60 + int(min_secs[1])
+  if start_secs >= dur:
+    log('ERROR: start %s is past end of video (%ds) for "%s"' %
+        (start, dur, file_name))
     sys.exit(1)
 
 output_file_names = []
