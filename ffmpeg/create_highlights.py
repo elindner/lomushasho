@@ -113,6 +113,12 @@ arg_parser.add_argument("--concatenate",
                         const=True,
                         default=False,
                         help="Generate a single video file.")
+arg_parser.add_argument("--reuse",
+                        type=str2bool,
+                        nargs='?',
+                        const=True,
+                        default=False,
+                        help="Reuse existing mp4 temporary files..")
 
 args = arg_parser.parse_args()
 
@@ -248,9 +254,8 @@ for index, datum in enumerate(data):
   date = datum['date']
   file_name = datum['file_name']
   clip_start = datum['start']
-  output_file_name = ''.join(
-      [c for c in title if c.isalpha() or c.isdigit() or c == ' '] +
-      ['.mp4']).rstrip().replace(' ', '_')
+
+  output_file_name = 'CLIP_%s.mp4' % re.sub(r'[^\w]', '_', datum['file_name'])
   output_file_names.append(output_file_name)
 
   log('')
@@ -263,8 +268,11 @@ for index, datum in enumerate(data):
   log('- output file: %s' % output_file_name)
   log('')
 
-  trimmed_video_file_name = trim_video(file_name, clip_start)
+  if args.reuse and os.path.exists(output_file_name):
+    log('reusing file %s' % output_file_name)
+    continue
 
+  trimmed_video_file_name = trim_video(file_name, clip_start)
   apply_filters(trimmed_video_file_name, output_file_name, title, date,
                 get_video_duration(trimmed_video_file_name))
   os.remove(trimmed_video_file_name)
