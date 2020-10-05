@@ -90,6 +90,17 @@ class Game(object):
                                  '(aborted)' if self.aborted else '')
 
 
+class Db(object):
+
+  def __init__(self):
+    self.flags = {}
+
+  def get_flag(self, player, flag, default=False):
+    if not flag in self.flags:
+      return default
+    return self.flags[flags]
+
+
 class Plugin(object):
   registered_commands = []
   registered_hooks = []
@@ -99,16 +110,19 @@ class Plugin(object):
   game = Game('ad')
   players_by_team = {}
   players_list = []
+  db = Db()
 
   def reset():
     Plugin.registered_commands = []
     Plugin.registered_hooks = []
     Plugin.messages = []
+    Plugin.sounds_played = {}
     Plugin.is_dev_map = False
     Plugin.current_factory = None
     Plugin.game = Game('ad')
     Plugin.players_by_team = {}
     Plugin.players_list = []
+    Plugin.cvars = {}
 
   def set_game(game):
     Plugin.game = game
@@ -156,6 +170,19 @@ class Plugin(object):
     Plugin.is_dev_map = dev
     Plugin.current_factory = factory
 
+  def clean_text(self, text):
+    return re.compile(r"\^[^\^]").sub("", text)
+
+  def play_sound(self, sound_file, player):
+    Plugin.sounds_played.setdefault(player, [])
+    return Plugin.sounds_played[player].append(sound_file)
+
+  def get_cvar(self, cvar, cvar_type):
+    return cvar_type(Plugin.cvars[cvar])
+
+  def set_cvar(self, cvar, value):
+    Plugin.cvars[cvar] = value
+
 
 def console_command(cmd_line):
   tokens = cmd_line.split(' ')
@@ -175,31 +202,33 @@ def reset():
 
 
 def load_player(player):
-  run_game_hooks('player_loaded', player)
+  run_game_hooks('player_loaded', player=player)
 
 
-def run_game_hooks(event, data=None):
+def send_chat(player, msg):
+  run_game_hooks('chat', player=player, msg=msg, channel='chat')
+
+
+# def run_game_hooks(event, data=None):
+def run_game_hooks(event, **kwargs):
   hooks = [h for h in Plugin.registered_hooks if h[0] == event]
   if not hooks:
     return
   for hook in hooks:
     handler = hook[1]
-    if data:
-      handler(data)
-    else:
-      handler()
+    handler(**kwargs)
 
 
 def end_game():
-  run_game_hooks(
-      'game_end', {
-          'MAP': Plugin.game.map,
-          'TSCORE0': Plugin.game.red_score,
-          'TSCORE1': Plugin.game.blue_score,
-          'SCORE_LIMIT': 15,
-          'CAPTURE_LIMIT': 8,
-          'ABORTED': Plugin.game.aborted,
-      })
+  run_game_hooks('game_end',
+                 data={
+                     'MAP': Plugin.game.map,
+                     'TSCORE0': Plugin.game.red_score,
+                     'TSCORE1': Plugin.game.blue_score,
+                     'SCORE_LIMIT': 15,
+                     'CAPTURE_LIMIT': 8,
+                     'ABORTED': Plugin.game.aborted,
+                 })
 
 
 def countdown_game():
@@ -215,15 +244,15 @@ def start_game(player_id_map,
                aborted=False):
   setup_game_data(player_id_map, map_name, red_team_ids, blue_team_ids,
                   red_score, blue_score, aborted)
-  run_game_hooks(
-      'game_start', {
-          'MAP': Plugin.game.map,
-          'TSCORE0': Plugin.game.red_score,
-          'TSCORE1': Plugin.game.blue_score,
-          'SCORE_LIMIT': 15,
-          'CAPTURE_LIMIT': 8,
-          'ABORTED': Plugin.game.aborted,
-      })
+  run_game_hooks('game_start',
+                 data={
+                     'MAP': Plugin.game.map,
+                     'TSCORE0': Plugin.game.red_score,
+                     'TSCORE1': Plugin.game.blue_score,
+                     'SCORE_LIMIT': 15,
+                     'CAPTURE_LIMIT': 8,
+                     'ABORTED': Plugin.game.aborted,
+                 })
 
 
 def run_game(player_id_map,
