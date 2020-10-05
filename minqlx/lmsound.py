@@ -5,25 +5,6 @@ import time
 
 HEADER_COLOR_STRING = '^2'
 
-SOUNDS = [
-    'alacamita',
-    'aplausos',
-    'chan',
-    'cuac',
-    'eldiego',
-    'eltiburon',
-    'fatality',
-    'grillos',
-    'hallelujah',
-    'japush',
-    'jaws',
-    'mastarde',
-    'modem',
-    'vader',
-    'vivaperon',
-    'xfiles',
-]
-
 # Move this to json config?
 SOUND_MAP = {
     'alacamita': [
