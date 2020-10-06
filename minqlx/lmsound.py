@@ -7,19 +7,25 @@ HEADER_COLOR_STRING = '^2'
 
 # Move this to json config?
 SOUND_MAP = {
+    '415': [],
     'alacamita': [
         'topo',
         'gigio',
         'topogigio',
     ],
     'aplausos': ['clapclapclap',],
+    'apunt': [],
     'chan': ['drama',],
+    'corrupt': [],
     'cuac': ['pato',],
+    'english': ['inglish',],
     'eldiego': ['eeeee',],
     'eltiburon': ['tibuton',],
     'fatality': ['mk',],
     'grillos': ['cricricri',],
     'hallelujah': ['aleluya',],
+    'hastalavista': ['arnold',],
+    'illbeback': ['back',],
     'japush': [
         'pina',
         'punch',
@@ -27,6 +33,7 @@ SOUND_MAP = {
     'jaws': [],
     'mastarde': [],
     'modem': [],
+    'stopit': [],
     'vader': ['soytupadre',],
     'vivaperon': ['peron',],
     'xfiles': [],
