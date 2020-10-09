@@ -215,7 +215,7 @@ def apply_filters(file_path, output_file_name, title, subtitle, duration):
       '[final]', '-map', '[final_audio]', '-c:v', 'libx264', '-preset', 'slow',
       '-profile:v', 'high', '-crf', '18', '-coder', '1', '-pix_fmt', 'yuv420p',
       '-movflags', '+faststart', '-g', '30', '-bf', '2', '-c:a', 'aac', '-b:a',
-      '384k', '-profile:a', 'aac_low', output_file_name
+      '384k', '-profile:a', 'aac_low', '-r', '60', output_file_name
   ])
 
 
