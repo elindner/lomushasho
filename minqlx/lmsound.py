@@ -35,6 +35,10 @@ SOUND_MAP = {
     'grillos': ['cricricri',],
     'hallelujah': ['aleluya',],
     'hastalavista': ['arnold',],
+    'harvard': [
+        'lamatanza',
+        'cfk',
+    ],
     'illbeback': ['back',],
     'japush': [
         'pina',
@@ -51,6 +55,10 @@ SOUND_MAP = {
     'pelotudo': ['ahilotenes',],
     'pete': [],
     'stopit': [],
+    'unpalito': [
+        'palito',
+        'culito',
+    ],
     'unplan': ['anibal',],
     'vader': ['soytupadre',],
     'vivaperon': ['peron',],
