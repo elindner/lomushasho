@@ -1,69 +1,15 @@
 import copy
+import json
 import minqlx
+import os
 import re
 import time
 
 HEADER_COLOR_STRING = '^2'
 
-# Move this to json config?
-SOUND_MAP = {
-    '415': [],
-    'alacamita': [
-        'topo',
-        'gigio',
-        'topogigio',
-    ],
-    'aplausos': ['clapclapclap',],
-    'apunt': [],
-    'callate': ['quico',],
-    'chan': ['drama',],
-    'confiaenmi': [
-        'hammer',
-        'martillo',
-    ],
-    'comoestoy': [],
-    'corrupt': [],
-    'cuac': ['pato',],
-    'english': ['inglish',],
-    'eldiego': ['eeeee',],
-    'eltiburon': ['tibuton',],
-    'fatality': ['mk',],
-    'grayskull': [
-        'porelpoder',
-        'poder',
-    ],
-    'grillos': ['cricricri',],
-    'hallelujah': ['aleluya',],
-    'hastalavista': ['arnold',],
-    'harvard': [
-        'lamatanza',
-        'cfk',
-    ],
-    'illbeback': ['back',],
-    'japush': [
-        'pina',
-        'punch',
-    ],
-    'jaws': [],
-    'laspiernas': ['mecortaron',],
-    'magnificos': ['brigadaa',],
-    'mastarde': [],
-    'modem': [],
-    'nohayproblema': ['alf',],
-    'notedoyotra': ['donramon',],
-    'paciencia': ['chavo',],
-    'pelotudo': ['ahilotenes',],
-    'pete': [],
-    'stopit': [],
-    'unpalito': [
-        'palito',
-        'culito',
-    ],
-    'unplan': ['anibal',],
-    'vader': ['soytupadre',],
-    'vivaperon': ['peron',],
-    'xfiles': [],
-}
+JSON_FILE_NAME = 'lmsound_map.json'
+ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
+JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 
 
 class lmsound(minqlx.Plugin):
@@ -77,7 +23,21 @@ class lmsound(minqlx.Plugin):
 
     self.trigger_to_sound = {}
     self.sound_to_triggers = {}
-    self.set_sound_map(SOUND_MAP)
+    self.load_sound_map()
+
+  def print_log(self, msg):
+    self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
+
+  def print_error(self, msg):
+    self.msg('%sFunes:^1 %s' % (HEADER_COLOR_STRING, msg))
+
+  def load_sound_map(self):
+    try:
+      self.set_sound_map(json.loads(open(JSON_FILE_PATH).read()))
+      self.print_log('Loaded sounds map with %s keys.' %
+                     len(self.sound_to_triggers.keys()))
+    except Exception as e:
+      self.print_error('Could not load sound map (%s)' % e)
 
   def set_sound_map(self, sound_map):
     self.sound_to_triggers = copy.deepcopy(sound_map)
@@ -112,6 +72,10 @@ class lmsound(minqlx.Plugin):
     player.tell('%s%s' % (HEADER_COLOR_STRING, '=' * 80))
     player.tell('%s]v[sound v0.0.0.0.1h:^7' % HEADER_COLOR_STRING)
     player.tell('%s%s' % (HEADER_COLOR_STRING, '-' * 80))
+
+    if len(self.sound_to_triggers.keys()) == 0:
+      player.tell('No sounds mapped!')
+      return
 
     longest_sound = max([len(x) for x in self.trigger_to_sound])
     fmt_string = "  ^3%%%ds^7: %%s" % longest_sound
