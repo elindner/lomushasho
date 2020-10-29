@@ -26,10 +26,10 @@ class lmsound(minqlx.Plugin):
     self.load_sound_map()
 
   def print_log(self, msg):
-    self.msg('%sFunes:^7 %s' % (HEADER_COLOR_STRING, msg))
+    self.msg('%s]v[sound:^7 %s' % (HEADER_COLOR_STRING, msg))
 
   def print_error(self, msg):
-    self.msg('%sFunes:^1 %s' % (HEADER_COLOR_STRING, msg))
+    self.msg('%s]v[sound:^1 %s' % (HEADER_COLOR_STRING, msg))
 
   def load_sound_map(self):
     try:
