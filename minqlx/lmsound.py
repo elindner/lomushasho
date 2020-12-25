@@ -80,7 +80,8 @@ class lmsound(minqlx.Plugin):
     longest_sound = max([len(x) for x in self.trigger_to_sound])
     fmt_string = "  ^3%%%ds^7: %%s" % longest_sound
 
+    lines = []
     for sound in sorted(self.sound_to_triggers.keys()):
-      # triggers = ', '.join(sorted(self.trigger_to_sound[sound]))
-      player.tell(fmt_string %
-                  (sound, ', '.join(sorted(self.sound_to_triggers[sound]))))
+      lines.append(fmt_string %
+                   (sound, ', '.join(sorted(self.sound_to_triggers[sound]))))
+    player.tell('\n'.join(lines))
