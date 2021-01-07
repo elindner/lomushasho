@@ -23,11 +23,14 @@ RATINGS = {
 }
 RATINGS_JSON = json.dumps(RATINGS)
 
+BOT_ID = 90000000000000123
+
 PLAYER_ID_MAP = {
     12: minqlx_fake.Player(12, 'john'),
     34: minqlx_fake.Player(34, 'paul'),
     56: minqlx_fake.Player(56, 'george'),
     78: minqlx_fake.Player(78, 'ringo'),
+    BOT_ID: minqlx_fake.Player(BOT_ID, 'hunter'),
 }
 
 
@@ -194,6 +197,10 @@ class TestOloraculo(unittest.TestCase):
 
     # final score is < required (15)
     minqlx_fake.run_game(PLAYER_ID_MAP, '', [56, 78], [12, 34], 7, 14)
+    self.assertEqual(original_stats, olor.get_stats())
+
+    # bots present
+    minqlx_fake.run_game(PLAYER_ID_MAP, '', [BOT_ID, 78], [12, 34], 7, 16)
     self.assertEqual(original_stats, olor.get_stats())
 
     # all valid

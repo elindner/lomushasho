@@ -33,6 +33,7 @@ JSON_FILE_NAME = 'oloraculo_stats.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
 INTERESTING_GAME_TYPES = ['ad', 'ctf', 'ca']
+IS_BOT_ID = lambda x: x > 90000000000000000
 
 
 class Db(object):
@@ -349,6 +350,15 @@ class oloraculo(minqlx.Plugin):
 
     if data['ABORTED']:
       self.print_log('Not updating ratings: game was aborted.')
+      return
+
+    bots_present = [
+        p.steam_id
+        for p in self.players()
+        if p.team in ['red', 'blue'] and IS_BOT_ID(p.steam_id)
+    ]
+    if len(bots_present) > 0:
+      self.print_log('Not updating ratings: bots played.')
       return
 
     game_type = self.game.type_short
