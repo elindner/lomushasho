@@ -8,7 +8,6 @@ import subprocess
 import sys
 import tempfile
 
-FNULL = open(os.devnull, 'w')
 FFPROBE_BIN = 'ffprobe'
 FFPROBE_OPTIONS = [
     '-v', 'error', '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -20,6 +19,7 @@ FADE_OUT_TIME_SECS = 1
 
 FILTER_TEMPLATE = """
   [0:v]
+    scale=2560x1440,
     format=
       pix_fmts=yuva420p,
     trim=
@@ -177,6 +177,7 @@ def run_or_die(cmd):
     log('ERROR:')
     print stderr
     sys.exit(p.returncode)
+  print stdout
 
 
 def trim_video(file_path, start_time):
