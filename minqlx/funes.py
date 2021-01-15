@@ -11,6 +11,7 @@ SUBTITLE_COLOR_STRING = '^3'
 JSON_FILE_NAME = 'funes_history.json'
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 JSON_FILE_PATH = os.path.join(ROOT_PATH, JSON_FILE_NAME)
+IS_BOT_ID = lambda x: x > 90000000000000000
 
 
 class funes(minqlx.Plugin):
@@ -179,6 +180,15 @@ class funes(minqlx.Plugin):
 
     if data['ABORTED']:
       self.print_log('Not updating history: game was aborted.')
+      return
+
+    bots_present = [
+        p.steam_id
+        for p in self.players()
+        if p.team in ['red', 'blue'] and IS_BOT_ID(p.steam_id)
+    ]
+    if len(bots_present) > 0:
+      self.print_log('Not updating ratings: bots played.')
       return
 
     game_type = self.game.type_short

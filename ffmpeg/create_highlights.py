@@ -107,18 +107,24 @@ arg_parser.add_argument('--file_name',
                         type=str,
                         required=True,
                         help='The CSV file to process.')
-arg_parser.add_argument("--concatenate",
+arg_parser.add_argument('--concatenate',
                         type=str2bool,
                         nargs='?',
                         const=True,
                         default=False,
-                        help="Generate a single video file.")
-arg_parser.add_argument("--reuse",
+                        help='Generate a single video file.')
+arg_parser.add_argument('--reuse',
                         type=str2bool,
                         nargs='?',
                         const=True,
                         default=False,
-                        help="Reuse existing mp4 temporary files..")
+                        help='Reuse existing mp4 temporary files..')
+arg_parser.add_argument('--dry',
+                        type=str2bool,
+                        nargs='?',
+                        const=True,
+                        default=False,
+                        help='Dry run, print ffmpeg cmnds instead or runing.')
 
 args = arg_parser.parse_args()
 
@@ -171,6 +177,10 @@ def get_video_duration(file_path):
 
 
 def run_or_die(cmd):
+  if args.dry:
+    print cmd
+    return
+
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout, stderr = p.communicate()
   if p.returncode != 0:
@@ -237,6 +247,9 @@ def concatenate(file_names, out_file_name):
 
 
 log('input file is %s' % args.file_name)
+
+if args.dry:
+  log('DRY RUN: will not run commands.')
 
 data = get_data_from_csv(args.file_name)
 

@@ -17,6 +17,7 @@ SOUND_MAP = {
     'bird': ['tweet'],
     'turtle': [],
 }
+SOUND_MAP_JSON = json.dumps(SOUND_MAP)
 
 
 class TestLmsound(unittest.TestCase):
@@ -29,9 +30,17 @@ class TestLmsound(unittest.TestCase):
                     '"%s" not in messages. Messages: %s' %
                     (txt, '\n'.join(PLAYER.messages)))
 
+  @patch('builtins.open', mock_open(read_data='invalid'))
+  def test_loads_map_invalid(self):
+    lms = lmsound.lmsound()
+    PLAYER.clear_messages()
+    minqlx_fake.call_command('!lmsound', PLAYER)
+    self.assertInMessages('No sounds mapped!')
+    pass
+
+  @patch('builtins.open', mock_open(read_data=SOUND_MAP_JSON))
   def test_prints_triggers(self):
     lms = lmsound.lmsound()
-    lms.set_sound_map(SOUND_MAP)
     PLAYER.clear_messages()
     minqlx_fake.call_command('!lmsound', PLAYER)
     self.assertInMessages('  bird: bird, tweet')
@@ -39,9 +48,9 @@ class TestLmsound(unittest.TestCase):
     self.assertInMessages('  dog: dog, woof')
     self.assertInMessages('  turtle: turtle')
 
+  @patch('builtins.open', mock_open(read_data=SOUND_MAP_JSON))
   def test_play_sound(self):
     lms = lmsound.lmsound()
-    lms.set_sound_map(SOUND_MAP)
     lms.set_cvar('qlx_funSoundDelay', 0)
     minqlx_fake.Plugin.set_players_by_team({'red': [PLAYER]})
 

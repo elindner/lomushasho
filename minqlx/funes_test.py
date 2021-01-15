@@ -12,6 +12,8 @@ from unittest.mock import MagicMock
 sys.modules['minqlx'] = minqlx_fake
 import funes
 
+BOT_ID = 90000000000000123
+
 PLAYER_ID_MAP = {
     10: minqlx_fake.Player(10, ']v[ - mandiok'),
     11: minqlx_fake.Player(11, 'fundi!'),
@@ -22,6 +24,7 @@ PLAYER_ID_MAP = {
     16: minqlx_fake.Player(16, ']v[ - blues'),
     17: minqlx_fake.Player(17, 'juanpi [[KoK]]'),
     90: minqlx_fake.Player(90, '...cthulhu...'),
+    BOT_ID: minqlx_fake.Player(BOT_ID, 'hunter'),
 }
 
 MAP_NAME = 'patio'
@@ -254,6 +257,14 @@ class TestFunes(unittest.TestCase):
     minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, [], blue_ids, 7, 15)
     self.assertEqual([4, 2], fun.get_teams_history('ad', teams))
     self.assertEqual([5, 2], fun.get_teams_history('ad', teams, aggregate=True))
+
+    # bots played
+    red_ids = [10, 15, BOT_ID]
+    blue_ids = [11, 14, 13]
+    teams = (red_ids, blue_ids)
+    minqlx_fake.run_game(PLAYER_ID_MAP, MAP_NAME, red_ids, blue_ids, 7, 15)
+    self.assertEqual([0, 0], fun.get_teams_history('ad', teams))
+    self.assertEqual([0, 0], fun.get_teams_history('ad', teams, aggregate=True))
 
   @patch('builtins.open', new_callable=fake_open, fake=FakeFile(HISTORY_JSON))
   @patch('datetime.date', FakeDateWeek10)
