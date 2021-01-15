@@ -17,6 +17,8 @@ FFPROBE_OPTIONS = [
 FFMPEG_BIN = 'ffmpeg'
 FADE_OUT_TIME_SECS = 1
 
+MIN_CLIP_LENGTH_SECS = 2
+
 FILTER_TEMPLATE = """
   [0:v]
     scale=2560x1440,
@@ -178,7 +180,7 @@ def get_video_duration(file_path):
 
 def run_or_die(cmd):
   if args.dry:
-    print cmd
+    print '[run]: %s' % (' '.join(cmd))
     return
 
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -263,16 +265,17 @@ for index, datum in enumerate(data):
     sys.exit(1)
 
   start = datum['start']
-  if not re.match(r'^\d\d:\d\d$', start):
+  if not re.match(r'^\d{1,2}:\d\d$', start):
     log('ERROR: "%s" is not a valid value for start time' % start)
     sys.exit(1)
 
   dur = get_video_duration(datum['file_name'])
   min_secs = start.split(':')
   start_secs = int(min_secs[0]) * 60 + int(min_secs[1])
-  if start_secs >= dur:
-    log('ERROR: start %s is past end of video (%ds) for "%s"' %
-        (start, dur, file_name))
+  if dur - start_secs < MIN_CLIP_LENGTH_SECS:
+    log('ERROR: start %s will make clip length %fs, which is less than the '
+        'allowed minimum of %ds for for "%s"' %
+        (start, (dur - start_secs), MIN_CLIP_LENGTH_SECS, file_name))
     sys.exit(1)
 
 output_file_names = []
@@ -280,7 +283,7 @@ for index, datum in enumerate(data):
   title = datum['title']
   date = datum['date']
   file_name = datum['file_name']
-  clip_start = datum['start']
+  clip_start = ':'.join([p.zfill(2) for p in datum['start'].split(':')])
 
   output_file_name = 'CLIP_%s.mp4' % re.sub(r'[^\w]', '_', datum['file_name'])
   output_file_names.append(output_file_name)
