@@ -11,7 +11,7 @@ abajo.mp4|Wasabi for the people|4-12-1977|00:30
 comela.mp4|comela, mandiok!|8-12-1977|00:00
 salgo.mp4|Salgo Coco...|8-12-1977|01:40
 
-NOTE: this requires ffprobe somewhere in PATH
+NOTE: this requires ffprobe somewhere in your $PATH
 TODO: need to add end_time too
 """
 
