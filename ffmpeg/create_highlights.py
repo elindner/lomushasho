@@ -1,6 +1,7 @@
 #!/bin/python
 
 import argparse
+import datetime
 import math
 import os
 import re
@@ -257,6 +258,7 @@ data = get_data_from_csv(args.file_name)
 
 # Validate files
 log('validating input csv file...')
+dow = None
 for index, datum in enumerate(data):
   file_name = datum['file_name']
 
@@ -277,6 +279,17 @@ for index, datum in enumerate(data):
         'allowed minimum of %ds for for "%s"' %
         (start, (dur - start_secs), MIN_CLIP_LENGTH_SECS, file_name))
     sys.exit(1)
+
+  row_dow = datetime.datetime.strptime(datum['date'], '%d-%m-%Y').strftime('%A')
+  if dow and row_dow != dow:
+    log('ERROR: clips have mismatching dows  (%s != %s)' % (row_dow, dow))
+    sys.exit(1)
+  dow = row_dow
+
+log('looks like the clips were recorded on a %s' % dow)
+
+if raw_input("ok to proceed? (y/n)") != "y":
+  sys.exit(0)
 
 output_file_names = []
 for index, datum in enumerate(data):
