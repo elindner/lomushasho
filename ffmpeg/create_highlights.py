@@ -288,8 +288,15 @@ for index, datum in enumerate(data):
 
 log('looks like the clips were recorded on a %s' % dow)
 
+concat_file_name = args.file_name.replace('csv', 'mp4')
+if os.path.exists(concat_file_name):
+  log('WARNING: output file %s exists! I will delete it!' % concat_file_name)
+
 if raw_input("ok to proceed? (y/n)") != "y":
   sys.exit(0)
+
+if os.path.exists(concat_file_name):
+  os.remove(concat_file_name)
 
 output_file_names = []
 for index, datum in enumerate(data):
@@ -322,7 +329,7 @@ for index, datum in enumerate(data):
   log('done')
 
 if args.concatenate:
-  concatenate(output_file_names, args.file_name.replace('csv', 'mp4'))
+  concatenate(output_file_names, concat_file_name)
 
 log('')
 log('all done.')
