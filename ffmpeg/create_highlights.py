@@ -116,6 +116,12 @@ arg_parser.add_argument('--concatenate',
                         const=True,
                         default=False,
                         help='Generate a single video file.')
+arg_parser.add_argument('--chapters',
+                        type=str2bool,
+                        nargs='?',
+                        const=True,
+                        default=False,
+                        help='Print out chapters (for YouTube description).')
 arg_parser.add_argument('--reuse',
                         type=str2bool,
                         nargs='?',
@@ -233,6 +239,17 @@ def apply_filters(file_path, output_file_name, title, subtitle, duration):
   ])
 
 
+def print_chapters(file_names, titles):
+  chapter_start = 0
+  print('Video Chapters:')
+  for index, file_name in enumerate(file_names):
+    file_path = os.path.join(os.getcwd(), file_name)
+    minute = round(chapter_start) / 60
+    second = round(chapter_start) % 60
+    print('%02d:%02d %s' % (minute, second, titles[index]))
+    chapter_start += get_video_duration(file_path)
+
+
 def concatenate(file_names, out_file_name):
   log('-----')
   log('writing concatenated file: %s' % out_file_name)
@@ -330,6 +347,9 @@ for index, datum in enumerate(data):
 
 if args.concatenate:
   concatenate(output_file_names, concat_file_name)
+
+if args.chapters:
+  print_chapters(output_file_names, [d['title'] for d in data])
 
 log('')
 log('all done.')
