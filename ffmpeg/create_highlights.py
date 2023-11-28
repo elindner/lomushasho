@@ -134,6 +134,13 @@ arg_parser.add_argument('--dry',
                         const=True,
                         default=False,
                         help='Dry run, print ffmpeg cmnds instead or runing.')
+arg_parser.add_argument('--dow_check',
+                        type=str2bool,
+                        nargs='?',
+                        const=True,
+                        default=False,
+                        help='Check if all clips have the same day of week.')
+
 
 args = arg_parser.parse_args()
 
@@ -298,7 +305,7 @@ for index, datum in enumerate(data):
     sys.exit(1)
 
   row_dow = datetime.datetime.strptime(datum['date'], '%d-%m-%Y').strftime('%A')
-  if dow and row_dow != dow:
+  if args.dow_check and dow and row_dow != dow:
     log('ERROR: clips have mismatching dows  (%s != %s)' % (row_dow, dow))
     sys.exit(1)
   dow = row_dow
