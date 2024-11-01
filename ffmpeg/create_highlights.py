@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 
 FFPROBE_BIN = 'ffprobe'
 FFPROBE_OPTIONS = [
@@ -166,6 +167,25 @@ def get_effective_media_path(file_path):
   return file_path
 
 
+def extract_timestamp(file_name, tz_delta):
+  if tz_delta[0] == '-':
+    mult = -1
+    tz_delta = tz_delta[1:]
+  else:
+    mult = 1
+
+  hours = int(tz_delta[:1])
+  minutes = int(tz_delta[1:])
+  delta = datetime.timedelta(hours=(hours * mult), minutes=(minutes * mult))
+
+  left_side = file_name[:-8].split('|')[0]
+  parts = left_side.split(' ')
+  file_dt_str = ' '.join(parts[1:4])
+  file_dt = datetime.datetime.strptime(file_dt_str, "%Y.%m.%d - %H.%M.%S.%f")
+  utc_dt = file_dt - delta
+
+  return utc_dt.strftime('%Y%m%d%H%M%S')
+
 def get_data_from_csv(file_name):
   log('parsing data file: %s' % file_name)
 
@@ -178,10 +198,14 @@ def get_data_from_csv(file_name):
         'title': parts[1],
         'date': parts[2],
         'start': parts[3],
+        'utc_datetime': extract_timestamp(parts[0], parts[4]),
     })
 
-  log('will process %d videos' % len(data))
-  return data
+  sorted_data = sorted(data, key=lambda x: x['utc_datetime'])
+  log('will process %d videos:' % len(sorted_data))
+  log('\n'.join([str(x) for x in sorted_data]))
+
+  return sorted_data
 
 
 def get_video_duration(file_path):
@@ -306,7 +330,7 @@ for index, datum in enumerate(data):
 
   row_dow = datetime.datetime.strptime(datum['date'], '%d-%m-%Y').strftime('%A')
   if args.dow_check and dow and row_dow != dow:
-    log('ERROR: clips have mismatching dows  (%s != %s)' % (row_dow, dow))
+    log('ERROR: clips have mismatching dows (%s != %s)' % (row_dow, dow))
     sys.exit(1)
   dow = row_dow
 
