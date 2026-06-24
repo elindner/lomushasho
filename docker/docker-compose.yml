@@ -1,0 +1,78 @@
+services:
+  redis_db:
+    image: redis:alpine
+    container_name: quake_redis
+    restart: unless-stopped
+
+  quake_server:
+    image: jamesla/quakelive:latest
+    container_name: quake_live_server
+    stdin_open: true
+    tty: true
+
+    ports:
+      - "27960:27960/udp" # Game Port
+      - "27015:27015/udp" # Steam Query Port
+      - "26900:26900/udp" # Steam Master Server Port
+    depends_on:
+      - redis_db
+
+    volumes:
+      - ./plugins:/qlds/minqlx-plugins
+      - ./mapuche_aliases.json:/qlds/minqlx-plugins/mapuche_aliases.json
+      - ./lmsound_map.json:/qlds/minqlx-plugins/lmsound_map.json
+
+    environment:
+      MINQLX_PLUGINS_GIT: "https://github.com/MinoMe/minqlx-plugins.git"
+
+      BAK_WORKSHOP_IDS: |
+        1229285077
+        1229646043
+        1232367617
+        1581081443
+        1631845548
+        1788666539
+        1865499301
+        2237187647
+        539421606
+        545699336
+        546129401
+        546209430
+        546895198
+        546960020
+        589313020
+        610690400
+        610698932
+        641686200
+        704683793
+        733837124
+        750877012
+        941765259
+
+ 
+      WORKSHOP_IDS: |
+        1229285077
+
+      ACCESS: |
+        1234|admin
+
+      # Your server configuration variables
+      SERVER_CFG: |
+        set sv_hostname "Lo]v[ushasho Quake Live Server"
+        set g_password ""
+        set sv_maxclients "16"
+        set g_gametype "0"
+        set serverstartup "startrandommap"
+        set qlx_plugins "essentials,permission,motd,fun,lmsound,mapuche"
+        set qlx_owner "76561198014448247"
+
+        // Redis configuration
+        set qlx_redisAddress "redis_db:6379"
+        set qlx_redisDatabase "0"
+
+      # Put map names here to build your pool
+      MAP_POOL: |
+        duelingkeeps|cft
+        campgrounds|ffa
+        overkill|ffa
+        bloodrun|ffa
