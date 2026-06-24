@@ -1,0 +1,52 @@
+{
+  "playa": {
+    "mapname": "q3wcp16",
+    "factory": "ad",
+    "dev": false
+  },
+  "asilo": {
+    "mapname": "asylum",
+    "factory": "ad",
+    "dev": false
+  },
+  "balcon": {
+    "mapname": "13camp",
+    "factory": "ad",
+    "dev": true
+  },
+  "herradura": {
+    "mapname": "courtyard",
+    "factory": "ad",
+    "dev": false
+  },
+  "lapidas": {
+    "mapname": "railyard",
+    "factory": "ctf",
+    "dev": false
+  },
+  "patio": {
+    "mapname": "duelingkeeps",
+    "factory": "ctf",
+     "dev": false
+  },
+  "lapidas2": {
+    "mapname": "mtlcft1",
+    "factory": "ad",
+    "dev": false
+  },
+  "chiquito": {
+    "mapname": "q3wxs2",
+    "factory": "ad",
+    "dev": false
+  },
+  "espacio": {
+    "mapname": "q3wcp23",
+    "factory": "ctf",
+    "dev": false
+  },
+  "toro": {
+    "mapname": "q3wcp17",
+    "factory": "ctf",
+    "dev": false
+  }
+}
