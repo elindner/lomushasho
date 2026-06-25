@@ -1,0 +1,17 @@
+[
+  {
+    "id": "lmctf",
+    "description": "CTF the way we like it",
+    "title": "Lo]v[ushasho CTF",
+    "basegt": "ctf",
+    "author": "id Software",
+    "cvars": {
+      "timelimit": "0",
+      "capturelimit": "30",
+      "g_loadout": "0",
+      "g_itemTimers": "0",
+      "g_spawnItemHoldable": "0",
+      "g_spawnItemPowerup": "0"
+    }
+  }
+]

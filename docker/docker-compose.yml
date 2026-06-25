@@ -21,6 +21,7 @@ services:
       - ./plugins:/qlds/minqlx-plugins
       - ./mapuche_aliases.json:/qlds/minqlx-plugins/mapuche_aliases.json
       - ./lmsound_map.json:/qlds/minqlx-plugins/lmsound_map.json
+      - ./lm.factories:/qlds/baseq3/scripts/lm.factories
 
     environment:
       MINQLX_PLUGINS_GIT: "https://github.com/MinoMe/minqlx-plugins.git"
@@ -71,7 +72,7 @@ services:
 
       # Put map names here to build your pool
       MAP_POOL: |
-        duelingkeeps|cft
+        duelingkeeps|lmctf
         campgrounds|ffa
         overkill|ffa
         bloodrun|ffa
