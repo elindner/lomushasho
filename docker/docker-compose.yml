@@ -22,6 +22,7 @@ services:
       - ./mapuche_aliases.json:/qlds/minqlx-plugins/mapuche_aliases.json
       - ./lmsound_map.json:/qlds/minqlx-plugins/lmsound_map.json
       - ./lm.factories:/qlds/baseq3/scripts/lm.factories
+      - ./steamapps:/qlds/steamapps
 
     environment:
       MINQLX_PLUGINS_GIT: "https://github.com/MinoMe/minqlx-plugins.git"
@@ -54,17 +55,25 @@ services:
         1229285077
 
       ACCESS: |
-        1234|admin
+        76561198014448247|admin
+        76561198015775820|admin
+        76561198045070268|admin
+        76561198257667410|admin
+        76561198257902041|admin
+        76561198261371023|admin
+        76561198282206581|admin
 
       # Your server configuration variables
       SERVER_CFG: |
         set sv_hostname "Lo]v[ushasho Quake Live Server"
-        set g_password ""
+        set g_password "${PASSWORD}"
         set sv_maxclients "16"
         set g_gametype "0"
         set serverstartup "startrandommap"
         set qlx_plugins "essentials,permission,motd,fun,lmsound,mapuche"
         set qlx_owner "76561198014448247"
+        set sv_privateClients "0"
+        set sv_privatePassword ""
 
         // Redis configuration
         set qlx_redisAddress "redis_db:6379"

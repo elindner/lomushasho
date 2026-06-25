@@ -18,7 +18,7 @@
     "id": "lmca",
     "description": "CA the way we like it",
     "title": "Lo]v[ushasho CA",
-    "basegt": "ctf",
+    "basegt": "ca",
     "author": "Lo]v[ushasho",
     "cvars": {
       "timelimit": "0",
