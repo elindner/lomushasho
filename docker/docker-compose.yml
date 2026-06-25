@@ -11,9 +11,7 @@ services:
     tty: true
 
     ports:
-      - "27960:27960/udp" # Game Port
-      - "27015:27015/udp" # Steam Query Port
-      - "26900:26900/udp" # Steam Master Server Port
+      - "27960:27960/udp"
     depends_on:
       - redis_db
 
@@ -22,11 +20,21 @@ services:
       - ./mapuche_aliases.json:/qlds/minqlx-plugins/mapuche_aliases.json
       - ./lmsound_map.json:/qlds/minqlx-plugins/lmsound_map.json
       - ./lm.factories:/qlds/baseq3/scripts/lm.factories
+      - ./steamapps:/qlds/steamapps
 
     environment:
+      ACCESS: |
+        76561198257667410|5
+        76561198014448247|5
+        76561198015775820|5
+        76561198045070268|5
+        76561198257902041|5
+        76561198261371023|5
+        76561198282206581|5
+
       MINQLX_PLUGINS_GIT: "https://github.com/MinoMe/minqlx-plugins.git"
 
-      BAK_WORKSHOP_IDS: |
+      WORKSHOP_IDS: |
         1229285077
         1229646043
         1232367617
@@ -50,29 +58,35 @@ services:
         750877012
         941765259
 
-      WORKSHOP_IDS: |
-        1229285077
-
-      ACCESS: |
-        1234|admin
-
-      # Your server configuration variables
       SERVER_CFG: |
-        set sv_hostname "Lo]v[ushasho Quake Live Server"
+        set sv_hostname "${SERVER_HOSTNAME}"
+        set sv_maxClients "${MAX_CLIENTS}"
+        set sv_privateClients "${MAX_CLIENTS}"
+        set sv_privatePassword "${PRIVATE_PASSWORD}"
+        set sv_fps "40"
+
+        set rcon_password "${RCON_PASSWORD}"
         set g_password ""
-        set sv_maxclients "16"
         set g_gametype "0"
         set serverstartup "startrandommap"
-        set qlx_plugins "essentials,permission,motd,fun,lmsound,mapuche"
-        set qlx_owner "76561198014448247"
 
-        // Redis configuration
+        set rate "25000"
+        set snaps "40"
+        set com_maxfps "125"
+
+        set qlx_owner "${QLX_OWNER}"
+        set qlx_plugins "essentials,motd,fun,lmsound,mapuche"
         set qlx_redisAddress "redis_db:6379"
         set qlx_redisDatabase "0"
 
-      # Put map names here to build your pool
       MAP_POOL: |
         duelingkeeps|lmctf
         campgrounds|ffa
         overkill|ffa
         bloodrun|ffa
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
