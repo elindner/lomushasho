@@ -21,12 +21,12 @@
   },
   "lapidas": {
     "mapname": "railyard",
-    "factory": "ctf",
+    "factory": "lmctf",
     "dev": false
   },
   "patio": {
     "mapname": "duelingkeeps",
-    "factory": "ctf",
+    "factory": "lmctf",
      "dev": false
   },
   "lapidas2": {
@@ -41,12 +41,17 @@
   },
   "espacio": {
     "mapname": "q3wcp23",
-    "factory": "ctf",
+    "factory": "lmctf",
     "dev": false
   },
   "toro": {
     "mapname": "q3wcp17",
-    "factory": "ctf",
+    "factory": "lmctf",
+    "dev": false
+  },
+  "poronga": {
+    "mapname": "deadandgone",
+    "factory": "lmca",
     "dev": false
   }
 }

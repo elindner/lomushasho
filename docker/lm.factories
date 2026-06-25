@@ -4,10 +4,25 @@
     "description": "CTF the way we like it",
     "title": "Lo]v[ushasho CTF",
     "basegt": "ctf",
-    "author": "id Software",
+    "author": "Lo]v[ushasho",
     "cvars": {
       "timelimit": "0",
       "capturelimit": "30",
+      "g_loadout": "0",
+      "g_itemTimers": "0",
+      "g_spawnItemHoldable": "0",
+      "g_spawnItemPowerup": "0"
+    }
+  },
+  {
+    "id": "lmca",
+    "description": "CA the way we like it",
+    "title": "Lo]v[ushasho CA",
+    "basegt": "ctf",
+    "author": "Lo]v[ushasho",
+    "cvars": {
+      "timelimit": "0",
+      "fraglimit": "10",
       "g_loadout": "0",
       "g_itemTimers": "0",
       "g_spawnItemHoldable": "0",
